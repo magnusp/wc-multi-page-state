@@ -183,6 +183,23 @@ export class AppHeader extends LitElement {
       gap: 0.5rem;
     }
 
+    .btn-nav-terminate {
+      background: transparent;
+      border: 1px solid var(--color-danger, #f87171);
+      color: var(--color-danger, #f87171);
+      border-radius: var(--radius-sm, 4px);
+      padding: 0.25rem 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background var(--transition-speed, 200ms), color var(--transition-speed, 200ms);
+    }
+
+    .btn-nav-terminate:hover {
+      background: rgba(248, 113, 113, 0.15);
+      color: var(--color-danger, #f87171);
+    }
+
     .btn-logout {
       background: transparent;
       border: 1px solid var(--color-border, #24304d);
@@ -236,6 +253,15 @@ export class AppHeader extends LitElement {
           ${this.currentUser ? html`
             <a href="dashboard.html">Telemetry</a>
             <a href="dashboard-nodes.html">Nodes</a>
+            <button
+              type="button"
+              class="btn-nav-terminate"
+              @click=${this.handleLogout}
+              aria-label="Terminate active operator session"
+              title="Terminate active session"
+            >
+              Terminate Session
+            </button>
           ` : null}
         </nav>
 

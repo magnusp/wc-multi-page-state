@@ -22,12 +22,47 @@ export class LoginPanel extends LitElement {
   @state() private password = '';
   @state() private errorMessage = '';
   @state() private isSubmitting = false;
+  @state() private currentUser: string | null = null;
+  @state() private activeTabId: string | null = null;
 
   private internals: ElementInternals;
+
+  private onAuthChanged = (e: Event) => {
+    const detail = (e as CustomEvent).detail;
+    this.currentUser = detail.user;
+    this.activeTabId = this.authStore?.currentTabId ?? null;
+  };
 
   constructor() {
     super();
     this.internals = this.attachInternals();
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    this.syncAuth();
+  }
+
+  willUpdate(changedProps: Map<string, unknown>): void {
+    if (changedProps.has('authStore')) {
+      this.syncAuth();
+    }
+  }
+
+  private syncAuth(): void {
+    if (this.authStore) {
+      this.currentUser = this.authStore.currentUser;
+      this.activeTabId = this.authStore.currentTabId;
+      this.authStore.removeEventListener('auth-changed', this.onAuthChanged);
+      this.authStore.addEventListener('auth-changed', this.onAuthChanged);
+    }
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    if (this.authStore) {
+      this.authStore.removeEventListener('auth-changed', this.onAuthChanged);
+    }
   }
 
   static styles = css`
@@ -57,6 +92,94 @@ export class LoginPanel extends LitElement {
       font-size: 0.875rem;
       color: var(--color-text-muted, #94a3b8);
       margin-bottom: 1.5rem;
+    }
+
+    .session-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(52, 211, 153, 0.12);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      color: var(--color-success, #34d399);
+      padding: 0.4rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+    }
+
+    .session-info {
+      background: var(--color-bg-base, #0a0d14);
+      border: 1px solid var(--color-border, #24304d);
+      border-radius: var(--radius-md, 8px);
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+
+    .session-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.875rem;
+      padding: 0.35rem 0;
+    }
+
+    .session-row:not(:last-child) {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .session-row .label {
+      color: var(--color-text-muted, #94a3b8);
+    }
+
+    .session-row .value {
+      font-family: var(--font-family-mono);
+      color: var(--color-text-main, #f8fafc);
+      font-weight: 600;
+    }
+
+    .session-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .btn-resume {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
+      padding: 0.75rem;
+      background: var(--color-primary, #38bdf8);
+      color: #04101e;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border-radius: var(--radius-md, 8px);
+      text-decoration: none;
+      transition: background var(--transition-speed, 200ms);
+    }
+
+    .btn-resume:hover {
+      background: var(--color-primary-hover, #0284c7);
+      text-decoration: none;
+    }
+
+    .btn-terminate {
+      width: 100%;
+      padding: 0.7rem;
+      background: transparent;
+      border: 1px solid var(--color-danger, #f87171);
+      color: var(--color-danger, #f87171);
+      border-radius: var(--radius-md, 8px);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background var(--transition-speed, 200ms), color var(--transition-speed, 200ms);
+    }
+
+    .btn-terminate:hover {
+      background: rgba(248, 113, 113, 0.15);
     }
 
     .form-group {
@@ -170,7 +293,48 @@ export class LoginPanel extends LitElement {
     }
   }
 
+  private handleTerminateSession() {
+    this.authStore?.logout();
+  }
+
   render() {
+    if (this.currentUser) {
+      return html`
+        <div class="card" role="region" aria-label="Active Session Established">
+          <div class="session-badge">
+            <span>●</span> Active Session Established
+          </div>
+
+          <h2 class="title">Welcome, ${this.currentUser}</h2>
+          <p class="subtitle">An authenticated operator session is currently active.</p>
+
+          <div class="session-info">
+            <div class="session-row">
+              <span class="label">Operator:</span>
+              <span class="value">${this.currentUser}</span>
+            </div>
+            <div class="session-row">
+              <span class="label">Tab Instance:</span>
+              <span class="value">${this.activeTabId ? this.activeTabId.slice(0, 14) + '…' : 'current-tab'}</span>
+            </div>
+            <div class="session-row">
+              <span class="label">Storage Scope:</span>
+              <span class="value">sessionStorage</span>
+            </div>
+          </div>
+
+          <div class="session-actions">
+            <a href="dashboard.html" class="btn-resume">
+              Resume Dashboard Matrix &rarr;
+            </a>
+            <button type="button" class="btn-terminate" @click=${this.handleTerminateSession}>
+              Terminate Session
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
     return html`
       <div class="card" role="region" aria-label="Sign In Portal">
         <h2 class="title">Gateway Access</h2>

@@ -85,3 +85,12 @@ This document tracks the hypothesis, architectural decisions, technical findings
   4. Registered `<ui-card>` in `src/components/app-shell.ts`.
   5. Verified clean compilation with zero type errors, 10/10 Vitest tests passing, and 100% WCAG 2.1 AA compliance in `pnpm test:audit`.
 
+## 2026-09-05: Gateway Session Reflection & Multi-Point Session Termination
+- **Diagnosis:**
+  When users were already signed in and navigated back to the gateway (`index.html`), the gateway still rendered an unauthenticated login input form instead of acknowledging the active session, and session termination was only possible through the user pill in the controls cluster.
+- **Resolution:**
+  1. Updated `<login-panel>` to subscribe reactively to `authContext` and `auth-changed` events.
+  2. When an operator session is active, `<login-panel>` displays an "Active Session Established" badge, operator call-sign, active tab instance ID, storage scope (`sessionStorage`), a button to resume the dashboard matrix via View Transitions, and a "Terminate Session" button.
+  3. Added a dedicated "Terminate Session" action button directly into `<nav>` within `<app-header>` when an operator is authenticated, complementing the user badge control.
+  4. Verified across all pages: 10/10 unit tests pass, zero accessibility violations in `pnpm test:audit`.
+
