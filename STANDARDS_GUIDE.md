@@ -79,4 +79,5 @@ A reference manual for building modern, resilient web applications leveraging na
 - **WHATWG Standard:** [EventTarget](https://dom.spec.whatwg.org/#interface-eventtarget) & [Web Storage API](https://html.spec.whatwg.org/multipage/webstorage.html)
 - **Role in Showcase:**
   - Stores (`AuthStore`, `TelemetryStore`, `AudioStore`) are pure TypeScript `EventTarget` instances.
+  - Storage is abstracted via `StorageLike` and injected via store constructors with an in-memory `MemoryStorage` fallback. This guarantees test isolation, universal environment safety, and graceful degradation in private browsing modes without relying on untestable globals.
   - Tab duplication is transparently handled: cloned tabs inherit `sessionStorage` while generating unique local `currentTabId` identifiers.

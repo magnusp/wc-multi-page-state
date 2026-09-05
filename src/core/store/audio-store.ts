@@ -1,4 +1,5 @@
 import { SoundscapeEngine } from '../audio/soundscape-engine.js';
+import { StorageLike, getDefaultStorage } from './storage-adapter.js';
 
 export interface AudioPreferences {
   enabled: boolean;
@@ -8,26 +9,29 @@ export interface AudioPreferences {
 
 /**
  * AudioStore: Coordinates soundscape playback state, mute status, and volume.
- * Persists user playback, mute, and volume preferences to sessionStorage so state is
+ * Persists user playback, mute, and volume preferences to session storage so state is
  * retained across page transitions, hard refreshes, and tab duplication.
+ * Accepts optional StorageLike dependency injection.
  * Emits events via EventTarget.
  */
 export class AudioStore extends EventTarget {
   private static readonly STORAGE_KEY = '__APP_AUDIO_PREFS__';
   private engine: SoundscapeEngine;
+  private storage: StorageLike;
   private isEnabled: boolean = true;
   private isMuted: boolean = false;
   private volumeLevel: number = 0.3;
 
-  constructor() {
+  constructor(storage: StorageLike = getDefaultStorage()) {
     super();
+    this.storage = storage;
     this.engine = new SoundscapeEngine();
     this.hydrateFromStorage();
   }
 
   private hydrateFromStorage(): void {
     try {
-      const raw = sessionStorage.getItem(AudioStore.STORAGE_KEY);
+      const raw = this.storage.getItem(AudioStore.STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as Partial<AudioPreferences>;
         if (typeof parsed.enabled === 'boolean') {
@@ -52,7 +56,7 @@ export class AudioStore extends EventTarget {
         muted: this.isMuted,
         volume: this.volumeLevel
       };
-      sessionStorage.setItem(AudioStore.STORAGE_KEY, JSON.stringify(prefs));
+      this.storage.setItem(AudioStore.STORAGE_KEY, JSON.stringify(prefs));
     } catch {
       // Ignore
     }

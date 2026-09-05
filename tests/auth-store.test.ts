@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { AuthStore } from '../src/core/store/auth-store.js';
+import { MemoryStorage } from '../src/core/store/storage-adapter.js';
 
 describe('AuthStore (Framework-Agnostic Domain Store)', () => {
   let store: AuthStore;
@@ -51,5 +52,22 @@ describe('AuthStore (Framework-Agnostic Domain Store)', () => {
     store.logout();
     expect(store.isAuthenticated).toBe(false);
     expect(store.currentUser).toBeNull();
+  });
+
+  it('supports dependency injection with custom StorageLike (e.g. MemoryStorage)', () => {
+    const memoryStorage = new MemoryStorage();
+    const isolatedStore = new AuthStore(memoryStorage);
+
+    isolatedStore.login('isolated-operator', 'joshua');
+    expect(isolatedStore.isAuthenticated).toBe(true);
+    expect(memoryStorage.getItem('__APP_AUTH_SESSION__')).toContain('isolated-operator');
+
+    // sessionStorage should be unaffected
+    expect(sessionStorage.getItem('__APP_AUTH_SESSION__')).toBeNull();
+
+    // Hydrate another store instance from the isolated memoryStorage
+    const secondStore = new AuthStore(memoryStorage);
+    expect(secondStore.isAuthenticated).toBe(true);
+    expect(secondStore.currentUser).toBe('isolated-operator');
   });
 });

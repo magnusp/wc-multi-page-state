@@ -19,7 +19,7 @@ This document guides AI coding agents in designing and implementing modern, dura
 5. **Semantic Light-DOM Markup & Progressive Enhancement:**
    - Static HTML entry points must provide semantic, crawlable light-DOM markup and structured CSS so search engines and users receive immediate paint prior to JavaScript evaluation.
 6. **Resilient Session & Multi-Tab Isolation:**
-   - Hydrate view state from `sessionStorage` on hard page reloads and tab duplication. Ensure independent tab instance IDs while sharing broadcast telemetry across tabs.
+   - Hydrate view state from session storage on hard page reloads and tab duplication. Thread storage dependencies into store constructors (`StorageLike` with `getDefaultStorage()` fallback) rather than directly referencing the global `sessionStorage`. This provides test isolation and safeguards against private-browsing security errors. Ensure independent tab instance IDs while sharing broadcast telemetry across tabs.
 7. **Continuous Media & Autoplay Resilience:**
    - When deploying Web Audio soundscapes, persist user playback, mute, and volume preferences to `sessionStorage`. Gracefully satisfy browser autoplay policies by attempting launch on boot and latching onto the first user interaction (`pointerdown`/`keydown`) if suspended.
 8. **Perceptible & Accessible View Transitions:**

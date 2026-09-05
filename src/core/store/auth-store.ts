@@ -1,3 +1,5 @@
+import { StorageLike, getDefaultStorage } from './storage-adapter.js';
+
 export interface UserSession {
   username: string;
   authenticatedAt: number;
@@ -7,28 +9,31 @@ export interface UserSession {
 /**
  * AuthStore: Framework-agnostic domain store using standard EventTarget.
  * Manages authentication, validation (password === 'joshua'),
- * sessionStorage synchronization, and multi-tab isolation.
+ * session storage synchronization, and multi-tab isolation.
+ * Accepts optional StorageLike dependency injection.
  */
 export class AuthStore extends EventTarget {
   private static readonly STORAGE_KEY = '__APP_AUTH_SESSION__';
+  private storage: StorageLike;
   private session: UserSession | null = null;
   public readonly currentTabId: string;
 
-  constructor() {
+  constructor(storage: StorageLike = getDefaultStorage()) {
     super();
+    this.storage = storage;
     // Unique tab instance ID per window context
     this.currentTabId = `tab_${Math.random().toString(36).slice(2, 9)}_${Date.now()}`;
     this.hydrateFromStorage();
   }
 
   /**
-   * Hydrates session from sessionStorage.
+   * Hydrates session from injected storage.
    * Transparently handles tab duplication: if a tab was duplicated by browser,
    * sessionStorage is cloned automatically; we adopt the credentials under our unique tabId.
    */
   private hydrateFromStorage(): void {
     try {
-      const raw = sessionStorage.getItem(AuthStore.STORAGE_KEY);
+      const raw = this.storage.getItem(AuthStore.STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed.username === 'string') {
@@ -76,7 +81,7 @@ export class AuthStore extends EventTarget {
     };
 
     try {
-      sessionStorage.setItem(AuthStore.STORAGE_KEY, JSON.stringify(this.session));
+      this.storage.setItem(AuthStore.STORAGE_KEY, JSON.stringify(this.session));
     } catch {
       // Storage quota or disabled fallback
     }
@@ -88,7 +93,7 @@ export class AuthStore extends EventTarget {
   public logout(): void {
     this.session = null;
     try {
-      sessionStorage.removeItem(AuthStore.STORAGE_KEY);
+      this.storage.removeItem(AuthStore.STORAGE_KEY);
     } catch {
       // Ignore
     }

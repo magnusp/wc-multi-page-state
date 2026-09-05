@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { AudioStore } from '../src/core/store/audio-store.js';
+import { MemoryStorage } from '../src/core/store/storage-adapter.js';
 
 describe('AudioStore', () => {
   let store: AudioStore;
 
   beforeEach(() => {
+    sessionStorage.clear();
     store = new AudioStore();
   });
 
@@ -53,6 +55,23 @@ describe('AudioStore', () => {
     expect(newStore.isAudioEnabled).toBe(false);
     expect(newStore.muted).toBe(true);
     expect(newStore.volume).toBeCloseTo(0.75);
+  });
+
+  it('supports dependency injection with custom StorageLike (e.g. MemoryStorage)', () => {
+    const memoryStorage = new MemoryStorage();
+    const isolatedStore = new AudioStore(memoryStorage);
+
+    isolatedStore.stop();
+    isolatedStore.toggleMute();
+    isolatedStore.setVolume(0.85);
+
+    expect(memoryStorage.getItem('__APP_AUDIO_PREFS__')).toContain('"volume":0.85');
+    expect(sessionStorage.getItem('__APP_AUDIO_PREFS__')).toBeNull();
+
+    const secondStore = new AudioStore(memoryStorage);
+    expect(secondStore.isAudioEnabled).toBe(false);
+    expect(secondStore.muted).toBe(true);
+    expect(secondStore.volume).toBeCloseTo(0.85);
   });
 
   it('manages telemetry alert threshold states (healthy, warning, critical)', () => {
