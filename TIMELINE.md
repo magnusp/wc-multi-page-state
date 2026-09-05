@@ -47,50 +47,19 @@ This document tracks the hypothesis, architectural decisions, technical findings
 - Created `STANDARDS_GUIDE.md` linking directly to W3C, WHATWG, and MDN specifications for all native primitives.
 - Created `AGENTS.template.md` providing guidelines and checklists for autonomous agents adopting this architecture in downstream repositories.
 
-## 2026-09-05: Fixed Audio Continuity & Persisted Audio Preferences
-- **Diagnosis:**
-  1. Click interception in `view-router.ts` previously used `e.target.closest('a')`, which fails when links originate inside Shadow DOM boundaries (such as `<app-header>` nav links) because `e.target` is retargeted to the host custom element. This caused the browser to execute a hard page reload on navigation, terminating the Web Audio context.
-  2. `AudioStore` previously did not persist user mute state and volume levels to `sessionStorage`.
-- **Resolution:**
-  1. Updated `attachLinkInterceptor()` in `view-router.ts` to inspect `e.composedPath()` to resolve `<a>` elements across Shadow DOM boundaries, restoring smooth client-side View Transitions.
-  2. Updated `AudioStore` to serialize and restore mute/volume settings in `sessionStorage` with unit test coverage.
-  3. Verified uninterrupted audio playback across in-app navigation with zero session interruption.
-
-## 2026-09-05: Resolved 'startTime' & Transition Exception Edge-Case
-- **Diagnosis:**
-  In certain browser runtimes / polyfills or browser extension environments, `startViewTransition` returned an object or Promise whose internal properties or transition promise lifecycle access caused an unhandled `startTime` property read when transitioning view containers. Additionally, store context synchronization on newly swapped custom elements needed reactive `willUpdate()` triggers.
-- **Resolution:**
-  1. Wrapped `startViewTransition` in a defensive `try...catch` and validated both standard `.finished` and Promise resolution semantics in `view-router.ts`.
-  2. Added reactive store re-synchronization (`willUpdate`) in `nodes-view.ts` and `telemetry-grid.ts` to ensure seamless listener management upon dynamic DOM swapping.
-
-## 2026-09-05: Enforced Multi-Layer Route & Component Protection
-- **Diagnosis:**
-  Unauthenticated users could click header navigation links to `dashboard.html` or navigate directly to them because:
-  1. `ViewRouter` previously lacked a centralized navigation guard mechanism (`beforeNavigate` hook) to intercept in-app routing requests before view containers were fetched/swapped.
-  2. `<app-header>` rendered links to `dashboard.html` and `dashboard-nodes.html` unconditionally.
-  3. `<telemetry-grid>` and `<nodes-view>` did not consume `authContext` to render a fallback barrier if loaded in a direct hit or unauthenticated state.
-- **Resolution:**
-  1. Added `addGuard()` to `ViewRouter`, redirecting any attempt to navigate to protected pages without authentication back to `index.html`.
-  2. Updated `<app-header>` to only display Telemetry and Nodes links when `currentUser` is present.
-  3. Added `authContext` consumption and fallback `Access Restricted` state to `<telemetry-grid>` and `<nodes-view>`.
-  4. Verified via Playwright automated browser tests that both in-app navigation and direct hits to protected pages redirect to `index.html` unless authenticated.
-
-## 2026-09-05: Unified Unauthenticated Barrier into Shared `<ui-card>` Component
-- **Diagnosis:**
-  Both `<nodes-view>` and `<telemetry-grid>` replicated an unauthenticated fallback state using duplicated inline markup and styles rather than utilizing a shared, reusable design element tied to the design system.
-- **Resolution:**
-  1. Created `<ui-card>` (`src/components/ui-card.ts`) as a purpose-built presentation component encapsulating header, icon badge, description, and action button/slots.
-  2. Wired component tokens into `src/styles/layers.css` within `@layer components` leveraging custom properties defined in `src/styles/tokens.css`.
-  3. Replaced duplicate markup in both `<nodes-view>` and `<telemetry-grid>` with `<ui-card>`.
-  4. Registered `<ui-card>` in `src/components/app-shell.ts`.
-  5. Verified clean compilation with zero type errors, 10/10 Vitest tests passing, and 100% WCAG 2.1 AA compliance in `pnpm test:audit`.
-
-## 2026-09-05: Gateway Session Reflection & Multi-Point Session Termination
-- **Diagnosis:**
-  When users were already signed in and navigated back to the gateway (`index.html`), the gateway still rendered an unauthenticated login input form instead of acknowledging the active session, and session termination was only possible through the user pill in the controls cluster.
-- **Resolution:**
-  1. Updated `<login-panel>` to subscribe reactively to `authContext` and `auth-changed` events.
-  2. When an operator session is active, `<login-panel>` displays an "Active Session Established" badge, operator call-sign, active tab instance ID, storage scope (`sessionStorage`), a button to resume the dashboard matrix via View Transitions, and a "Terminate Session" button.
-  3. Added a dedicated "Terminate Session" action button directly into `<nav>` within `<app-header>` when an operator is authenticated, complementing the user badge control.
-  4. Verified across all pages: 10/10 unit tests pass, zero accessibility violations in `pnpm test:audit`.
+## 2026-09-05: Web Platform Primitives & Architectural Decisions
+- **Domain State Encapsulation & Multi-Tab Isolation:**
+  - Implemented decoupled, framework-agnostic stores using standard browser `EventTarget`.
+  - Used `sessionStorage` with unique per-tab identifiers to support graceful tab duplication and isolated session scopes.
+- **Form-Associated Custom Elements (FACE) & ElementInternals:**
+  - Implemented custom form controls participating in standard `<form>` lifecycle, validation constraints (`setValidity()`), and browser autofill.
+- **Native View Transitions & Zero-Bundle SPA Navigation:**
+  - Standardized on `document.startViewTransition()` for multi-page static HTML hydration without client-side routing libraries.
+  - Intercepted shadow-piercing events via `composedPath()`.
+- **Declarative Shadow DOM (DSD) & Zero-JS Static Pre-Rendering:**
+  - Structured static HTML files with `<template shadowrootmode="open">` to achieve instant First Contentful Paint (FCP) and native search indexability.
+- **Native Browser Capabilities:**
+  - Standardized on `<dialog>` with `.showModal()` for modal dialogs and the HTML Popover API (`popover="auto"`) for zero-JS floating inspect panels.
+  - Implemented ambient soundscape with Web Audio API (`AudioContext`, oscillators, biquad filters).
+  - Adopted CSS `@layer` for cascade management and CSS `@container` queries for modular component responsiveness.
 

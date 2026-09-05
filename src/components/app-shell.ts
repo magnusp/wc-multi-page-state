@@ -21,6 +21,32 @@ declare global {
   }
 }
 
+// Suppress known Chromium DevTools issue #543499029 / web-vitals #792:
+// DevTools injects an embedded copy of web-vitals that crashes during soft navigations
+// with "TypeError: Cannot read properties of undefined (reading 'startTime')"
+if (typeof window !== 'undefined') {
+  window.addEventListener('error', (event) => {
+    if (
+      event.message?.includes("Cannot read properties of undefined (reading 'startTime')") ||
+      (event.error instanceof TypeError && event.error.message?.includes("'startTime'"))
+    ) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      return true;
+    }
+  }, true);
+
+  window.addEventListener('unhandledrejection', (event) => {
+    if (
+      event.reason?.message?.includes("Cannot read properties of undefined (reading 'startTime')") ||
+      (event.reason instanceof TypeError && event.reason.message?.includes("'startTime'"))
+    ) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  }, true);
+}
+
 /**
  * <app-shell>: Root orchestrator component.
  * - Provides W3C DOM Context for Auth, Telemetry, and Audio
