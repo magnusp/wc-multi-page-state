@@ -23,8 +23,19 @@ export class NodesView extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
+    this.syncStore();
+  }
+
+  willUpdate(changedProps: Map<string, unknown>): void {
+    if (changedProps.has('telemetryStore')) {
+      this.syncStore();
+    }
+  }
+
+  private syncStore(): void {
     if (this.telemetryStore) {
       this.nodes = this.telemetryStore.getNodes();
+      this.telemetryStore.removeEventListener('telemetry-tick', this.onTick);
       this.telemetryStore.addEventListener('telemetry-tick', this.onTick);
     }
   }

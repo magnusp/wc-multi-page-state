@@ -33,12 +33,20 @@ export class ViewRouter extends EventTarget {
     this.dispatchEvent(new CustomEvent('route-changing', { detail: { targetUrl: url } }));
 
     // Check if View Transitions API is supported
-    const docWithTransitions = document as unknown as { startViewTransition?: (cb: () => Promise<void>) => { finished: Promise<void> } };
+    const docWithTransitions = document as unknown as { startViewTransition?: (cb: () => Promise<void>) => { finished?: Promise<void> } | Promise<void> };
     if (typeof docWithTransitions.startViewTransition === 'function') {
-      const transition = docWithTransitions.startViewTransition(async () => {
+      try {
+        const transition = docWithTransitions.startViewTransition(async () => {
+          await this.loadView(url);
+        });
+        if (transition && 'finished' in transition && transition.finished) {
+          await transition.finished;
+        } else if (transition instanceof Promise) {
+          await transition;
+        }
+      } catch {
         await this.loadView(url);
-      });
-      await transition.finished;
+      }
     } else {
       await this.loadView(url);
     }

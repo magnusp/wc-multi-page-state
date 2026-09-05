@@ -55,3 +55,10 @@ This document tracks the hypothesis, architectural decisions, technical findings
   1. Updated `attachLinkInterceptor()` in `view-router.ts` to inspect `e.composedPath()` to resolve `<a>` elements across Shadow DOM boundaries, restoring smooth client-side View Transitions.
   2. Updated `AudioStore` to serialize and restore mute/volume settings in `sessionStorage` with unit test coverage.
   3. Verified uninterrupted audio playback across in-app navigation with zero session interruption.
+
+## 2026-09-05: Resolved 'startTime' & Transition Exception Edge-Case
+- **Diagnosis:**
+  In certain browser runtimes / polyfills or browser extension environments, `startViewTransition` returned an object or Promise whose internal properties or transition promise lifecycle access caused an unhandled `startTime` property read when transitioning view containers. Additionally, store context synchronization on newly swapped custom elements needed reactive `willUpdate()` triggers.
+- **Resolution:**
+  1. Wrapped `startViewTransition` in a defensive `try...catch` and validated both standard `.finished` and Promise resolution semantics in `view-router.ts`.
+  2. Added reactive store re-synchronization (`willUpdate`) in `nodes-view.ts` and `telemetry-grid.ts` to ensure seamless listener management upon dynamic DOM swapping.

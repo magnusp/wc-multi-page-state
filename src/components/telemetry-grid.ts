@@ -38,9 +38,22 @@ export class TelemetryGrid extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
+    this.syncStore();
+  }
+
+  willUpdate(changedProps: Map<string, unknown>): void {
+    if (changedProps.has('telemetryStore')) {
+      this.syncStore();
+    }
+  }
+
+  private syncStore(): void {
     if (this.telemetryStore) {
       this.nodes = this.telemetryStore.getNodes();
       this.activeIncident = this.telemetryStore.getIncident();
+      this.telemetryStore.removeEventListener('telemetry-tick', this.onTick);
+      this.telemetryStore.removeEventListener('incident-raised', this.onIncident);
+      this.telemetryStore.removeEventListener('incident-resolved', this.onIncidentResolved);
       this.telemetryStore.addEventListener('telemetry-tick', this.onTick);
       this.telemetryStore.addEventListener('incident-raised', this.onIncident);
       this.telemetryStore.addEventListener('incident-resolved', this.onIncidentResolved);
