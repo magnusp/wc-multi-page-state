@@ -36,14 +36,15 @@ To onboard and align autonomous AI coding agents in other projects with these ex
    - Incident triage modal uses native `<dialog>` (`.showModal()`, backdrop, `<form method="dialog">`).
    - Node spec inspections use native HTML **Popover API** (`popover="auto"` and `popovertarget`) with zero JavaScript positioning libraries.
 4. **Fluid View Transitions & Continuous Web Audio:**
-   - Seamless client-side transitions using `document.startViewTransition()`.
-   - Ambient Web Audio soundscape (listening drone + live telemetry threshold beep overlay: 2.0s WARNING / 0.5s CRITICAL) with persistent play, volume, and **Mute/Unmute** controls that continue uninterrupted across views.
+   - Seamless client-side transitions using `document.startViewTransition()` with prominent fade and subtle translate animations (respecting `prefers-reduced-motion`).
+   - Ambient Web Audio soundscape (listening drone + live telemetry threshold beep overlay: 2.0s WARNING / 0.5s CRITICAL) starting enabled and unmuted by default with persistent play, volume, and **Mute/Unmute** controls that continue uninterrupted across views. Handled with resilient browser autoplay fallback.
 5. **Modern Native CSS:**
    - Organized with CSS `@layer` (`reset`, `tokens`, `base`, `layout`, `components`).
    - Uses CSS Container Queries (`@container`) for modular component responsiveness.
-6. **Multi-Tab Hydration & `file://` Direct Execution:**
+6. **Multi-Tab Hydration, Storage Dependency Injection & `file://` Direct Execution:**
    - Built to run seamlessly straight from the local filesystem (`file:///.../dist/index.html`).
-   - Supports transparent tab duplication and hard refreshes using `sessionStorage`.
+   - Storage abstracted via `StorageLike` with constructor dependency injection and in-memory `MemoryStorage` fallback for test isolation.
+   - Supports transparent tab duplication and hard refreshes using session storage.
 
 ---
 

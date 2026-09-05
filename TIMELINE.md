@@ -47,20 +47,17 @@ This document tracks the hypothesis, architectural decisions, technical findings
 - Created `STANDARDS_GUIDE.md` linking directly to W3C, WHATWG, and MDN specifications for all native primitives.
 - Created `AGENTS.template.md` providing guidelines and checklists for autonomous agents adopting this architecture in downstream repositories.
 
-## 2026-09-05: Web Platform Primitives & Architectural Decisions
-- **Domain State Encapsulation & Multi-Tab Isolation:**
-  - Implemented decoupled, framework-agnostic stores using standard browser `EventTarget`.
-  - Used `sessionStorage` with unique per-tab identifiers to support graceful tab duplication and isolated session scopes.
-- **Form-Associated Custom Elements (FACE) & ElementInternals:**
-  - Implemented custom form controls participating in standard `<form>` lifecycle, validation constraints (`setValidity()`), and browser autofill.
-- **Native View Transitions & Zero-Bundle SPA Navigation:**
-  - Standardized on `document.startViewTransition()` for multi-page static HTML hydration without client-side routing libraries.
-  - Intercepted shadow-piercing events via `composedPath()`.
-- **Semantic Static HTML Pre-Rendering & Progressive Enhancement:**
-  - Structured static HTML files with semantic light-DOM markup to achieve instant First Contentful Paint (FCP) and native search indexability without SSR complexity.
-- **Native Browser Capabilities:**
-  - Standardized on `<dialog>` with `.showModal()` for modal dialogs and the HTML Popover API (`popover="auto"`) for zero-JS floating inspect panels.
-  - Implemented ambient soundscape with Web Audio API (`AudioContext`, oscillators, biquad filters) featuring listening mode drone and telemetry-driven threshold alerts (2.0s WARNING / 0.5s CRITICAL beep overlay).
-  - Adopted CSS `@layer` for cascade management and CSS `@container` queries for modular component responsiveness.
+## 2026-09-05: Iterative Refinements & Architecture Hardening
+- **Enhanced View Transitions:**
+  - Implemented visually perceptible page transitions using custom CSS animations (`view-fade-out` / `view-fade-in` over 350ms with subtle Y-axis translate) replacing default abrupt cross-fades, while fully respecting `@media (prefers-reduced-motion: reduce)`.
+- **Default Enabled Soundscape & Autoplay Resilience:**
+  - Configured ambient audio to start enabled and unmuted by default (volume 0.3) upon application boot.
+  - Handled strict browser autoplay policies via a one-time user gesture fallback (`pointerdown`/`keydown`) to resume/start the `AudioContext` seamlessly upon first interaction.
+  - Persisted user playback choices (`enabled`, `muted`, `volume`) to session storage.
+- **Storage Decoupling & Constructor Dependency Injection:**
+  - Abstracted browser storage behind a `StorageLike` contract with an in-memory `MemoryStorage` fallback.
+  - Refactored `AuthStore` and `AudioStore` constructors to accept optional storage dependencies with safe default detection (`getDefaultStorage()`).
+  - Eliminated global state coupling, ensuring clean test isolation, SSR safety, and defense against private-browsing `SecurityError` exceptions.
+
 
 
