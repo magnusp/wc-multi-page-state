@@ -25,6 +25,7 @@ export class TelemetryGrid extends LitElement {
 
   @state() private nodes: TelemetryNode[] = [];
   @state() private activeIncident: TelemetryIncident | null = null;
+  @state() private isAuthenticated: boolean = false;
 
   @query('incident-modal')
   private modalEl!: IncidentModal;
@@ -42,18 +43,28 @@ export class TelemetryGrid extends LitElement {
     this.telemetryStore?.resolveIncident();
   };
 
+  private onAuthChanged = (e: Event) => {
+    const user = (e as CustomEvent).detail?.user;
+    this.isAuthenticated = !!user;
+  };
+
   connectedCallback(): void {
     super.connectedCallback();
-    this.syncStore();
+    this.syncStores();
   }
 
   willUpdate(changedProps: Map<string, unknown>): void {
-    if (changedProps.has('telemetryStore')) {
-      this.syncStore();
+    if (changedProps.has('telemetryStore') || changedProps.has('authStore')) {
+      this.syncStores();
     }
   }
 
-  private syncStore(): void {
+  private syncStores(): void {
+    if (this.authStore) {
+      this.isAuthenticated = this.authStore.isAuthenticated;
+      this.authStore.removeEventListener('auth-changed', this.onAuthChanged);
+      this.authStore.addEventListener('auth-changed', this.onAuthChanged);
+    }
     if (this.telemetryStore) {
       this.nodes = this.telemetryStore.getNodes();
       this.activeIncident = this.telemetryStore.getIncident();
@@ -68,6 +79,9 @@ export class TelemetryGrid extends LitElement {
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
+    if (this.authStore) {
+      this.authStore.removeEventListener('auth-changed', this.onAuthChanged);
+    }
     if (this.telemetryStore) {
       this.telemetryStore.removeEventListener('telemetry-tick', this.onTick);
       this.telemetryStore.removeEventListener('incident-raised', this.onIncident);
@@ -235,7 +249,7 @@ export class TelemetryGrid extends LitElement {
   }
 
   render() {
-    if (this.authStore && !this.authStore.isAuthenticated) {
+    if (!this.isAuthenticated) {
       return html`
         <ui-card
           title="Access Restricted"

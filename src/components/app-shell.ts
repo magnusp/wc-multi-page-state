@@ -103,21 +103,31 @@ export class AppShell extends LitElement {
       // - Else if any active node is 'warning' -> setAlertState('warning') (2.0s beep interval)
       // - Else -> setAlertState('healthy') (ambient drone only)
       this.telemetryStore.addEventListener('telemetry-tick', (e: Event) => {
-        const nodes = (e as CustomEvent).detail.nodes as Array<{ status: 'healthy' | 'warning' | 'critical'; isCordoned?: boolean }>;
-        const activeNodes = nodes.filter(n => !n.isCordoned);
-        if (activeNodes.some(n => n.status === 'critical')) {
-          this.audioStore.setAlertState('critical');
-        } else if (activeNodes.some(n => n.status === 'warning')) {
-          this.audioStore.setAlertState('warning');
-        } else {
-          this.audioStore.setAlertState('healthy');
-        }
+        const nodes = (e as CustomEvent).detail.nodes;
+        this.evaluateClusterAlarm(nodes);
       });
+    }
+
+    // Evaluate initial cluster metrics immediately on instantiation
+    this.evaluateClusterAlarm(this.telemetryStore.getNodes());
+  }
+
+  private evaluateClusterAlarm(nodes: Array<{ status: 'healthy' | 'warning' | 'critical'; isCordoned?: boolean }>): void {
+    const activeNodes = (nodes || []).filter(n => !n.isCordoned);
+    if (activeNodes.some(n => n.status === 'critical')) {
+      this.audioStore.setAlertState('critical');
+    } else if (activeNodes.some(n => n.status === 'warning')) {
+      this.audioStore.setAlertState('warning');
+    } else {
+      this.audioStore.setAlertState('healthy');
     }
   }
 
   connectedCallback(): void {
     super.connectedCallback();
+
+    // Re-evaluate cluster alarm whenever shell connects to DOM
+    this.evaluateClusterAlarm(this.telemetryStore.getNodes());
 
     // Listen for custom navigation requests
     this.addEventListener('request-navigation', (e: Event) => {
@@ -128,6 +138,11 @@ export class AppShell extends LitElement {
     // Listen for successful login events from <login-panel>
     this.addEventListener('login-success', () => {
       this.router.navigate('dashboard.html');
+    });
+
+    // Listen to auth changes to immediately bounce from protected routes upon sign-out
+    this.authStore.addEventListener('auth-changed', () => {
+      this.verifyRouteProtection();
     });
 
     // Verify initial route protection on page boot
