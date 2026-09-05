@@ -147,6 +147,32 @@ export class AppShell extends LitElement {
 
     // Verify initial route protection on page boot
     this.verifyRouteProtection();
+
+    // Start ambient soundscape by default if enabled in preferences
+    this.initAudioAutoplay();
+  }
+
+  private initAudioAutoplay(): void {
+    if (!this.audioStore.isAudioEnabled) {
+      return;
+    }
+
+    // Attempt direct start
+    this.audioStore.start().catch(() => {
+      // Autoplay blocked by browser policy
+    });
+
+    // Fallback: resume/start upon the first user interaction if audio context is suspended or blocked
+    const resumeOnInteraction = () => {
+      if (this.audioStore.isAudioEnabled && !this.audioStore.isPlaying) {
+        this.audioStore.start().catch(() => {});
+      }
+      window.removeEventListener('pointerdown', resumeOnInteraction);
+      window.removeEventListener('keydown', resumeOnInteraction);
+    };
+
+    window.addEventListener('pointerdown', resumeOnInteraction, { once: true, passive: true });
+    window.addEventListener('keydown', resumeOnInteraction, { once: true, passive: true });
   }
 
   private verifyRouteProtection(): void {

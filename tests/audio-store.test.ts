@@ -8,8 +8,9 @@ describe('AudioStore', () => {
     store = new AudioStore();
   });
 
-  it('initializes in stopped and unmuted state with default volume', () => {
+  it('initializes in unmuted state with default volume and audio enabled', () => {
     expect(store.isPlaying).toBe(false);
+    expect(store.isAudioEnabled).toBe(true);
     expect(store.muted).toBe(false);
     expect(store.volume).toBeCloseTo(0.3);
   });
@@ -33,12 +34,23 @@ describe('AudioStore', () => {
     expect(store.volume).toBeCloseTo(0.65);
   });
 
-  it('persists and restores mute and volume state from sessionStorage', () => {
+  it('handles stop and start explicitly', () => {
+    store.stop();
+    expect(store.isAudioEnabled).toBe(false);
+    expect(store.isPlaying).toBe(false);
+
+    store.start();
+    expect(store.isAudioEnabled).toBe(true);
+  });
+
+  it('persists and restores audio preferences from sessionStorage', () => {
+    store.stop();
     store.toggleMute();
     store.setVolume(0.75);
 
     // Simulate new tab / page hydration
     const newStore = new AudioStore();
+    expect(newStore.isAudioEnabled).toBe(false);
     expect(newStore.muted).toBe(true);
     expect(newStore.volume).toBeCloseTo(0.75);
   });

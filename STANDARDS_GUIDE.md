@@ -56,7 +56,8 @@ A reference manual for building modern, resilient web applications leveraging na
 - **W3C Recommendation:** [Web Audio API](https://www.w3.org/TR/webaudio/)
 - **MDN Guide:** [Web Audio API on MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
 - **Role in Showcase:**
-  - Implemented in `src/core/audio/soundscape-engine.ts` and `src/core/store/audio-store.ts`.
+  - Implemented in `src/core/audio/soundscape-engine.ts`, `src/core/store/audio-store.ts`, and `src/components/app-shell.ts`.
+  - Starts ambient audio enabled and unmuted by default on application launch (persisting user preferences to `sessionStorage` and gracefully handling browser autoplay policies via first-interaction fallback).
   - Synthesizes a real-time background drone (operator listening mode) using native `OscillatorNode`, `BiquadFilterNode`, and `GainNode`.
   - Overlays dynamic alert beeps driven by live telemetry thresholds: 2.0-second intervals for **WARNING** (>70% CPU) and 0.5-second intervals for **CRITICAL** (>85% CPU / >90% Memory). Cordoning nodes sheds their load to calm the loop.
   - Because client navigation preserves shell state, audio continues playing uninterrupted across view transitions between `dashboard.html` and `dashboard-nodes.html`.
