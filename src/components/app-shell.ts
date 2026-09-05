@@ -56,6 +56,17 @@ export class AppShell extends LitElement {
       this.telemetryStore = new TelemetryStore();
       this.audioStore = new AudioStore();
       this.router = new ViewRouter();
+      
+      // Global navigation guard: block protected dashboard routes if unauthenticated
+      this.router.addGuard((targetUrl: string) => {
+        const cleanPath = targetUrl.split('?')[0].split('#')[0].split('/').pop() || 'index.html';
+        const isProtected = cleanPath === 'dashboard.html' || cleanPath === 'dashboard-nodes.html';
+        if (isProtected && !this.authStore.isAuthenticated) {
+          return 'index.html';
+        }
+        return true;
+      });
+
       window.__AETHER_SHELL__ = this;
       window.__SHELL_BOOTED__ = true;
     }
@@ -75,7 +86,7 @@ export class AppShell extends LitElement {
       this.router.navigate('dashboard.html');
     });
 
-    // Check protected routes
+    // Verify initial route protection on page boot
     this.verifyRouteProtection();
   }
 
@@ -83,7 +94,6 @@ export class AppShell extends LitElement {
     const path = window.location.pathname.split('/').pop() || 'index.html';
     const isProtectedRoute = path === 'dashboard.html' || path === 'dashboard-nodes.html';
     if (isProtectedRoute && !this.authStore.isAuthenticated) {
-      // In static / file:// context, redirect to index
       this.router.navigate('index.html');
     }
   }

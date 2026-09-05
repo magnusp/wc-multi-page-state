@@ -1,8 +1,9 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { consume } from '@lit/context';
-import { telemetryContext } from '../core/context/tokens.js';
+import { telemetryContext, authContext } from '../core/context/tokens.js';
 import type { TelemetryStore, TelemetryNode, TelemetryIncident } from '../core/store/telemetry-store.js';
+import type { AuthStore } from '../core/store/auth-store.js';
 import './node-popover.js';
 import './incident-modal.js';
 import type { IncidentModal } from './incident-modal.js';
@@ -13,6 +14,10 @@ import type { IncidentModal } from './incident-modal.js';
  */
 @customElement('telemetry-grid')
 export class TelemetryGrid extends LitElement {
+  @consume({ context: authContext, subscribe: true })
+  @property({ attribute: false })
+  public authStore?: AuthStore;
+
   @consume({ context: telemetryContext, subscribe: true })
   @property({ attribute: false })
   public telemetryStore?: TelemetryStore;
@@ -228,6 +233,20 @@ export class TelemetryGrid extends LitElement {
   }
 
   render() {
+    if (this.authStore && !this.authStore.isAuthenticated) {
+      return html`
+        <div class="card" style="text-align: center; padding: 3rem 1.5rem; margin: 2rem auto; max-width: 500px;" role="region" aria-label="Restricted Telemetry Access">
+          <h2 class="title" style="margin-bottom: 0.75rem;">Access Restricted</h2>
+          <p style="color: var(--color-text-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">
+            You must authenticate at the gateway before accessing real-time telemetry clusters.
+          </p>
+          <a href="index.html" style="display: inline-block; padding: 0.65rem 1.25rem; background: var(--color-primary); color: #04101e; font-weight: 600; border-radius: var(--radius-md); text-decoration: none;">
+            Return to Gateway Login
+          </a>
+        </div>
+      `;
+    }
+
     return html`
       <div class="header-bar">
         <div>

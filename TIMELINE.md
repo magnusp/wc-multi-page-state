@@ -62,3 +62,15 @@ This document tracks the hypothesis, architectural decisions, technical findings
 - **Resolution:**
   1. Wrapped `startViewTransition` in a defensive `try...catch` and validated both standard `.finished` and Promise resolution semantics in `view-router.ts`.
   2. Added reactive store re-synchronization (`willUpdate`) in `nodes-view.ts` and `telemetry-grid.ts` to ensure seamless listener management upon dynamic DOM swapping.
+
+## 2026-09-05: Enforced Multi-Layer Route & Component Protection
+- **Diagnosis:**
+  Unauthenticated users could click header navigation links to `dashboard.html` or navigate directly to them because:
+  1. `ViewRouter` previously lacked a centralized navigation guard mechanism (`beforeNavigate` hook) to intercept in-app routing requests before view containers were fetched/swapped.
+  2. `<app-header>` rendered links to `dashboard.html` and `dashboard-nodes.html` unconditionally.
+  3. `<telemetry-grid>` and `<nodes-view>` did not consume `authContext` to render a fallback barrier if loaded in a direct hit or unauthenticated state.
+- **Resolution:**
+  1. Added `addGuard()` to `ViewRouter`, redirecting any attempt to navigate to protected pages without authentication back to `index.html`.
+  2. Updated `<app-header>` to only display Telemetry and Nodes links when `currentUser` is present.
+  3. Added `authContext` consumption and fallback `Access Restricted` state to `<telemetry-grid>` and `<nodes-view>`.
+  4. Verified via Playwright automated browser tests that both in-app navigation and direct hits to protected pages redirect to `index.html` unless authenticated.

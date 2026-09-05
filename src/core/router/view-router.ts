@@ -4,11 +4,19 @@
  * - Enhances relative link navigation using document.startViewTransition().
  * - Emits 'route-changing' and 'route-changed' events.
  */
+export type NavigationGuard = (targetUrl: string) => boolean | string;
+
 export class ViewRouter extends EventTarget {
+  private guards: NavigationGuard[] = [];
+
   constructor() {
     super();
     this.attachLinkInterceptor();
     window.addEventListener('popstate', (e) => this.handlePopState(e));
+  }
+
+  public addGuard(guard: NavigationGuard): void {
+    this.guards.push(guard);
   }
 
   private attachLinkInterceptor(): void {
@@ -30,14 +38,24 @@ export class ViewRouter extends EventTarget {
   }
 
   public async navigate(url: string, pushState: boolean = true): Promise<void> {
-    this.dispatchEvent(new CustomEvent('route-changing', { detail: { targetUrl: url } }));
+    let targetUrl = url;
+    for (const guard of this.guards) {
+      const result = guard(targetUrl);
+      if (result === false) {
+        return;
+      } else if (typeof result === 'string') {
+        targetUrl = result;
+      }
+    }
+
+    this.dispatchEvent(new CustomEvent('route-changing', { detail: { targetUrl } }));
 
     // Check if View Transitions API is supported
     const docWithTransitions = document as unknown as { startViewTransition?: (cb: () => Promise<void>) => { finished?: Promise<void> } | Promise<void> };
     if (typeof docWithTransitions.startViewTransition === 'function') {
       try {
         const transition = docWithTransitions.startViewTransition(async () => {
-          await this.loadView(url);
+          await this.loadView(targetUrl);
         });
         if (transition && 'finished' in transition && transition.finished) {
           await transition.finished;
@@ -45,17 +63,17 @@ export class ViewRouter extends EventTarget {
           await transition;
         }
       } catch {
-        await this.loadView(url);
+        await this.loadView(targetUrl);
       }
     } else {
-      await this.loadView(url);
+      await this.loadView(targetUrl);
     }
 
     if (pushState) {
-      window.history.pushState({ url }, '', url);
+      window.history.pushState({ url: targetUrl }, '', targetUrl);
     }
 
-    this.dispatchEvent(new CustomEvent('route-changed', { detail: { currentUrl: url } }));
+    this.dispatchEvent(new CustomEvent('route-changed', { detail: { currentUrl: targetUrl } }));
   }
 
   private async loadView(url: string): Promise<void> {
