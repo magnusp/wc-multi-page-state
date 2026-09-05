@@ -20,7 +20,11 @@ This document guides AI coding agents in designing and implementing modern, dura
    - Static HTML entry points must provide semantic, crawlable light-DOM markup and structured CSS so search engines and users receive immediate paint prior to JavaScript evaluation.
 6. **Resilient Session & Multi-Tab Isolation:**
    - Hydrate view state from `sessionStorage` on hard page reloads and tab duplication. Ensure independent tab instance IDs while sharing broadcast telemetry across tabs.
-7. **Local Filesystem & Static Deployment Compatibility:**
+7. **Continuous Media & Autoplay Resilience:**
+   - When deploying Web Audio soundscapes, persist user playback, mute, and volume preferences to `sessionStorage`. Gracefully satisfy browser autoplay policies by attempting launch on boot and latching onto the first user interaction (`pointerdown`/`keydown`) if suspended.
+8. **Perceptible & Accessible View Transitions:**
+   - Use `document.startViewTransition` paired with keyframes (e.g. cross-fade and subtle translate) for clear visual navigation feedback, while strictly respecting `@media (prefers-reduced-motion: reduce)`.
+9. **Local Filesystem & Static Deployment Compatibility:**
    - Configure bundlers (e.g. Vite) with relative asset links (`base: './'`) so static output is self-contained and functions directly from disk (`file://`) or any basic static file server.
 
 ---
@@ -35,8 +39,8 @@ This document guides AI coding agents in designing and implementing modern, dura
 | **Form Inputs** | Form-Associated Custom Elements (`ElementInternals`) | Formik, React Hook Form |
 | **Modals / Dialogs** | Native HTML `<dialog>` with `.showModal()` & `::backdrop` | External modal portals, Radix Dialog |
 | **Popovers / Menus** | Native Popover API (`popover="auto"`, `popovertarget`) | Floating UI, Popper.js, Tippy |
-| **Page Transitions** | Native View Transitions API (`document.startViewTransition`) | Framer Motion, React Transition Group |
-| **Continuous Media** | Persistent shell singleton + Web Audio API | SPA router audio workarounds |
+| **Page Transitions** | Native View Transitions API (`document.startViewTransition`) with reduced-motion support | Framer Motion, React Transition Group |
+| **Continuous Media** | Persistent shell singleton + Web Audio API + user gesture fallback | SPA router audio workarounds |
 | **Responsive UI** | CSS Container Queries (`@container`) | Window resize event listeners, media-query bloat |
 | **CSS Architecture** | CSS Cascade Layers (`@layer`) & Custom Properties | CSS-in-JS runtimes, heavy utility preprocessors |
 
