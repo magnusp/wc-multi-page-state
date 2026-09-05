@@ -12,6 +12,7 @@ import './app-header.js';
 import './login-panel.js';
 import './telemetry-grid.js';
 import './nodes-view.js';
+import './ui-card.js';
 
 declare global {
   interface Window {

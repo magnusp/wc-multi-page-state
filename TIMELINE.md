@@ -74,3 +74,14 @@ This document tracks the hypothesis, architectural decisions, technical findings
   2. Updated `<app-header>` to only display Telemetry and Nodes links when `currentUser` is present.
   3. Added `authContext` consumption and fallback `Access Restricted` state to `<telemetry-grid>` and `<nodes-view>`.
   4. Verified via Playwright automated browser tests that both in-app navigation and direct hits to protected pages redirect to `index.html` unless authenticated.
+
+## 2026-09-05: Unified Unauthenticated Barrier into Shared `<ui-card>` Component
+- **Diagnosis:**
+  Both `<nodes-view>` and `<telemetry-grid>` replicated an unauthenticated fallback state using duplicated inline markup and styles rather than utilizing a shared, reusable design element tied to the design system.
+- **Resolution:**
+  1. Created `<ui-card>` (`src/components/ui-card.ts`) as a purpose-built presentation component encapsulating header, icon badge, description, and action button/slots.
+  2. Wired component tokens into `src/styles/layers.css` within `@layer components` leveraging custom properties defined in `src/styles/tokens.css`.
+  3. Replaced duplicate markup in both `<nodes-view>` and `<telemetry-grid>` with `<ui-card>`.
+  4. Registered `<ui-card>` in `src/components/app-shell.ts`.
+  5. Verified clean compilation with zero type errors, 10/10 Vitest tests passing, and 100% WCAG 2.1 AA compliance in `pnpm test:audit`.
+

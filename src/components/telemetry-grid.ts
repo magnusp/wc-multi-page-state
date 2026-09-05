@@ -6,6 +6,7 @@ import type { TelemetryStore, TelemetryNode, TelemetryIncident } from '../core/s
 import type { AuthStore } from '../core/store/auth-store.js';
 import './node-popover.js';
 import './incident-modal.js';
+import './ui-card.js';
 import type { IncidentModal } from './incident-modal.js';
 
 /**
@@ -235,15 +236,12 @@ export class TelemetryGrid extends LitElement {
   render() {
     if (this.authStore && !this.authStore.isAuthenticated) {
       return html`
-        <div class="card" style="text-align: center; padding: 3rem 1.5rem; margin: 2rem auto; max-width: 500px;" role="region" aria-label="Restricted Telemetry Access">
-          <h2 class="title" style="margin-bottom: 0.75rem;">Access Restricted</h2>
-          <p style="color: var(--color-text-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">
-            You must authenticate at the gateway before accessing real-time telemetry clusters.
-          </p>
-          <a href="index.html" style="display: inline-block; padding: 0.65rem 1.25rem; background: var(--color-primary); color: #04101e; font-weight: 600; border-radius: var(--radius-md); text-decoration: none;">
-            Return to Gateway Login
-          </a>
-        </div>
+        <ui-card
+          title="Access Restricted"
+          description="You must authenticate at the gateway before accessing real-time telemetry clusters."
+          actionLabel="Return to Gateway Login"
+          actionHref="index.html"
+        ></ui-card>
       `;
     }
 
