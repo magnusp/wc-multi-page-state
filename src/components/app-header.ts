@@ -49,17 +49,19 @@ export class AppHeader extends LitElement {
   }
 
   private syncStores(): void {
-    if (this.authStore) {
-      this.currentUser = this.authStore.currentUser;
-      this.authStore.removeEventListener('auth-changed', this.onAuthChanged);
-      this.authStore.addEventListener('auth-changed', this.onAuthChanged);
+    const auth = this.authStore || window.__AETHER_SHELL__?.authStore;
+    if (auth) {
+      this.currentUser = auth.currentUser;
+      auth.removeEventListener('auth-changed', this.onAuthChanged);
+      auth.addEventListener('auth-changed', this.onAuthChanged);
     }
-    if (this.audioStore) {
-      this.isAudioPlaying = this.audioStore.isPlaying;
-      this.isAudioMuted = this.audioStore.muted;
-      this.audioVolume = this.audioStore.volume;
-      this.audioStore.removeEventListener('audio-changed', this.onAudioChanged);
-      this.audioStore.addEventListener('audio-changed', this.onAudioChanged);
+    const audio = this.audioStore || window.__AETHER_SHELL__?.audioStore;
+    if (audio) {
+      this.isAudioPlaying = audio.isPlaying;
+      this.isAudioMuted = audio.muted;
+      this.audioVolume = audio.volume;
+      audio.removeEventListener('audio-changed', this.onAudioChanged);
+      audio.addEventListener('audio-changed', this.onAudioChanged);
     }
   }
 

@@ -50,11 +50,25 @@ export class LoginPanel extends LitElement {
   }
 
   private syncAuth(): void {
-    if (this.authStore) {
-      this.currentUser = this.authStore.currentUser;
-      this.activeTabId = this.authStore.currentTabId;
-      this.authStore.removeEventListener('auth-changed', this.onAuthChanged);
-      this.authStore.addEventListener('auth-changed', this.onAuthChanged);
+    const store = this.authStore || window.__AETHER_SHELL__?.authStore;
+    if (store) {
+      this.currentUser = store.currentUser;
+      this.activeTabId = store.currentTabId;
+      store.removeEventListener('auth-changed', this.onAuthChanged);
+      store.addEventListener('auth-changed', this.onAuthChanged);
+    } else if (typeof sessionStorage !== 'undefined') {
+      // Direct fallback to sessionStorage if DOM context is still upgrading
+      try {
+        const raw = sessionStorage.getItem('__APP_AUTH_SESSION__');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed.username === 'string') {
+            this.currentUser = parsed.username;
+          }
+        }
+      } catch {
+        // Ignore
+      }
     }
   }
 
@@ -275,10 +289,11 @@ export class LoginPanel extends LitElement {
 
   private handleSubmit(e: Event) {
     e.preventDefault();
-    if (!this.authStore) return;
+    const store = this.authStore || window.__AETHER_SHELL__?.authStore;
+    if (!store) return;
 
     this.isSubmitting = true;
-    const res = this.authStore.login(this.username, this.password);
+    const res = store.login(this.username, this.password);
     this.isSubmitting = false;
 
     if (res.success) {
@@ -294,7 +309,8 @@ export class LoginPanel extends LitElement {
   }
 
   private handleTerminateSession() {
-    this.authStore?.logout();
+    const store = this.authStore || window.__AETHER_SHELL__?.authStore;
+    store?.logout();
   }
 
   render() {
