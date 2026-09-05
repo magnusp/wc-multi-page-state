@@ -47,8 +47,8 @@ A reference manual for building modern, resilient web applications leveraging na
 - **W3C Candidate Recommendation:** [CSS View Transitions Module Level 1](https://www.w3.org/TR/css-view-transitions-1/)
 - **MDN Guide:** [View Transitions API on MDN](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API)
 - **Role in Showcase:**
-  - Implemented in `src/core/router/view-router.ts`.
-  - Uses `document.startViewTransition()` to interpolate smoothly between multi-page view containers without full-page white flashes.
+  - Implemented in `src/core/router/view-router.ts` and styled in `src/styles/layers.css`.
+  - Uses `document.startViewTransition()` paired with custom `@keyframes view-fade-out` / `view-fade-in` (350ms easing) to deliver a prominent, visually distinct fade transition between multi-page view containers without full-page flashes. Respects `prefers-reduced-motion`.
 
 ---
 
