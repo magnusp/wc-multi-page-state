@@ -1,10 +1,18 @@
 import { SoundscapeEngine } from '../audio/soundscape-engine.js';
 
+export interface AudioPreferences {
+  muted: boolean;
+  volume: number;
+}
+
 /**
  * AudioStore: Coordinates soundscape playback state, mute status, and volume.
+ * Persists user mute and volume preferences to sessionStorage so state is
+ * retained across page transitions, hard refreshes, and tab duplication.
  * Emits events via EventTarget.
  */
 export class AudioStore extends EventTarget {
+  private static readonly STORAGE_KEY = '__APP_AUDIO_PREFS__';
   private engine: SoundscapeEngine;
   private isMuted: boolean = false;
   private volumeLevel: number = 0.3;
@@ -12,6 +20,36 @@ export class AudioStore extends EventTarget {
   constructor() {
     super();
     this.engine = new SoundscapeEngine();
+    this.hydrateFromStorage();
+  }
+
+  private hydrateFromStorage(): void {
+    try {
+      const raw = sessionStorage.getItem(AudioStore.STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<AudioPreferences>;
+        if (typeof parsed.muted === 'boolean') {
+          this.isMuted = parsed.muted;
+        }
+        if (typeof parsed.volume === 'number') {
+          this.volumeLevel = Math.max(0, Math.min(1, parsed.volume));
+        }
+      }
+    } catch {
+      // Storage unavailable or disabled
+    }
+  }
+
+  private saveToStorage(): void {
+    try {
+      const prefs: AudioPreferences = {
+        muted: this.isMuted,
+        volume: this.volumeLevel
+      };
+      sessionStorage.setItem(AudioStore.STORAGE_KEY, JSON.stringify(prefs));
+    } catch {
+      // Ignore
+    }
   }
 
   public get isPlaying(): boolean {
@@ -39,6 +77,7 @@ export class AudioStore extends EventTarget {
   public toggleMute(): void {
     this.isMuted = !this.isMuted;
     this.engine.setVolume(this.isMuted ? 0 : this.volumeLevel);
+    this.saveToStorage();
     this.notifyState();
   }
 
@@ -47,6 +86,7 @@ export class AudioStore extends EventTarget {
     if (!this.isMuted) {
       this.engine.setVolume(this.volumeLevel);
     }
+    this.saveToStorage();
     this.notifyState();
   }
 

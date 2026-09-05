@@ -39,14 +39,26 @@ export class AppHeader extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
+    this.syncStores();
+  }
+
+  willUpdate(changedProps: Map<string, unknown>): void {
+    if (changedProps.has('authStore') || changedProps.has('audioStore')) {
+      this.syncStores();
+    }
+  }
+
+  private syncStores(): void {
     if (this.authStore) {
       this.currentUser = this.authStore.currentUser;
+      this.authStore.removeEventListener('auth-changed', this.onAuthChanged);
       this.authStore.addEventListener('auth-changed', this.onAuthChanged);
     }
     if (this.audioStore) {
       this.isAudioPlaying = this.audioStore.isPlaying;
       this.isAudioMuted = this.audioStore.muted;
       this.audioVolume = this.audioStore.volume;
+      this.audioStore.removeEventListener('audio-changed', this.onAudioChanged);
       this.audioStore.addEventListener('audio-changed', this.onAudioChanged);
     }
   }

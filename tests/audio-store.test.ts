@@ -32,4 +32,14 @@ describe('AudioStore', () => {
     store.setVolume(0.65);
     expect(store.volume).toBeCloseTo(0.65);
   });
+
+  it('persists and restores mute and volume state from sessionStorage', () => {
+    store.toggleMute();
+    store.setVolume(0.75);
+
+    // Simulate new tab / page hydration
+    const newStore = new AudioStore();
+    expect(newStore.muted).toBe(true);
+    expect(newStore.volume).toBeCloseTo(0.75);
+  });
 });

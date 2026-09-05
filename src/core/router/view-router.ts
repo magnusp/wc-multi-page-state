@@ -13,7 +13,9 @@ export class ViewRouter extends EventTarget {
 
   private attachLinkInterceptor(): void {
     document.addEventListener('click', (e) => {
-      const target = (e.target as HTMLElement).closest('a');
+      // Use composedPath to find <a> tags inside Shadow DOM boundaries
+      const path = e.composedPath ? e.composedPath() : [e.target as EventTarget];
+      const target = path.find((el): el is HTMLAnchorElement => el instanceof HTMLElement && el.tagName === 'A');
       if (!target) return;
 
       const href = target.getAttribute('href');

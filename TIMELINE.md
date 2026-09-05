@@ -46,3 +46,12 @@ This document tracks the hypothesis, architectural decisions, technical findings
 - Added AI/LLM provenance and human-in-the-loop attestation to `README.md`.
 - Created `STANDARDS_GUIDE.md` linking directly to W3C, WHATWG, and MDN specifications for all native primitives.
 - Created `AGENTS.template.md` providing guidelines and checklists for autonomous agents adopting this architecture in downstream repositories.
+
+## 2026-09-05: Fixed Audio Continuity & Persisted Audio Preferences
+- **Diagnosis:**
+  1. Click interception in `view-router.ts` previously used `e.target.closest('a')`, which fails when links originate inside Shadow DOM boundaries (such as `<app-header>` nav links) because `e.target` is retargeted to the host custom element. This caused the browser to execute a hard page reload on navigation, terminating the Web Audio context.
+  2. `AudioStore` previously did not persist user mute state and volume levels to `sessionStorage`.
+- **Resolution:**
+  1. Updated `attachLinkInterceptor()` in `view-router.ts` to inspect `e.composedPath()` to resolve `<a>` elements across Shadow DOM boundaries, restoring smooth client-side View Transitions.
+  2. Updated `AudioStore` to serialize and restore mute/volume settings in `sessionStorage` with unit test coverage.
+  3. Verified uninterrupted audio playback across in-app navigation with zero session interruption.
