@@ -1,0 +1,105 @@
+import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import { provide } from '@lit/context';
+import { authContext, telemetryContext, audioContext } from '../core/context/tokens.js';
+import { AuthStore } from '../core/store/auth-store.js';
+import { TelemetryStore } from '../core/store/telemetry-store.js';
+import { AudioStore } from '../core/store/audio-store.js';
+import { ViewRouter } from '../core/router/view-router.js';
+
+// Register companion components
+import './app-header.js';
+import './login-panel.js';
+import './telemetry-grid.js';
+import './nodes-view.js';
+
+declare global {
+  interface Window {
+    __SHELL_BOOTED__?: boolean;
+    __AETHER_SHELL__?: AppShell;
+  }
+}
+
+/**
+ * <app-shell>: Root orchestrator component.
+ * - Provides W3C DOM Context for Auth, Telemetry, and Audio
+ * - Boots client-side router with native View Transitions
+ * - Ensures single singleton runtime even during page transitions
+ */
+@customElement('app-shell')
+export class AppShell extends LitElement {
+  @provide({ context: authContext })
+  @property({ attribute: false })
+  public authStore: AuthStore;
+
+  @provide({ context: telemetryContext })
+  @property({ attribute: false })
+  public telemetryStore: TelemetryStore;
+
+  @provide({ context: audioContext })
+  @property({ attribute: false })
+  public audioStore: AudioStore;
+
+  public router: ViewRouter;
+
+  constructor() {
+    super();
+
+    // Preserve singleton instances if window shell already initialized
+    if (window.__AETHER_SHELL__) {
+      this.authStore = window.__AETHER_SHELL__.authStore;
+      this.telemetryStore = window.__AETHER_SHELL__.telemetryStore;
+      this.audioStore = window.__AETHER_SHELL__.audioStore;
+      this.router = window.__AETHER_SHELL__.router;
+    } else {
+      this.authStore = new AuthStore();
+      this.telemetryStore = new TelemetryStore();
+      this.audioStore = new AudioStore();
+      this.router = new ViewRouter();
+      window.__AETHER_SHELL__ = this;
+      window.__SHELL_BOOTED__ = true;
+    }
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+
+    // Listen for custom navigation requests
+    this.addEventListener('request-navigation', (e: Event) => {
+      const url = (e as CustomEvent).detail.url;
+      this.router.navigate(url);
+    });
+
+    // Listen for successful login events from <login-panel>
+    this.addEventListener('login-success', () => {
+      this.router.navigate('dashboard.html');
+    });
+
+    // Check protected routes
+    this.verifyRouteProtection();
+  }
+
+  private verifyRouteProtection(): void {
+    const path = window.location.pathname.split('/').pop() || 'index.html';
+    const isProtectedRoute = path === 'dashboard.html' || path === 'dashboard-nodes.html';
+    if (isProtectedRoute && !this.authStore.isAuthenticated) {
+      // In static / file:// context, redirect to index
+      this.router.navigate('index.html');
+    }
+  }
+
+  static styles = css`
+    :host {
+      display: contents;
+    }
+  `;
+
+  render() {
+    return html`
+      <div class="app-layout">
+        <app-header></app-header>
+        <slot></slot>
+      </div>
+    `;
+  }
+}

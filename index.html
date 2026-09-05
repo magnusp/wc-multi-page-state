@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AetherWatch | Gateway & Autonomous Telemetry</title>
+  <meta name="description" content="A modern, standards-first monitoring and edge telemetry platform showcase built with Web Components." />
+  <link rel="stylesheet" href="./src/styles/layers.css" />
+</head>
+<body>
+  <app-shell>
+    <!-- Declarative Shadow DOM (DSD) fallback for instant paint -->
+    <template shadowrootmode="open">
+      <slot></slot>
+    </template>
+
+    <main class="main-content">
+      <div style="text-align: center; margin-bottom: 3rem; margin-top: 1rem;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 0.75rem; letter-spacing: -0.025em;">
+          Autonomous Edge Monitoring
+        </h1>
+        <p style="font-size: 1.1rem; color: var(--color-text-muted); max-width: 640px; margin: 0 auto 1.5rem auto;">
+          High-performance distributed telemetry powered by standards-first web platform primitives and Web Components.
+        </p>
+        <div style="display: flex; justify-content: center; gap: 1rem;">
+          <a href="product.html" style="font-size: 0.95rem; font-weight: 600;">
+            Explore Platform Architecture &rarr;
+          </a>
+        </div>
+      </div>
+
+      <!-- Form-Associated Custom Element (FACE) -->
+      <login-panel></login-panel>
+    </main>
+  </app-shell>
+
+  <script type="module" src="./src/components/app-shell.ts"></script>
+</body>
+</html>
