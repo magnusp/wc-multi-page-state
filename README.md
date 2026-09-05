@@ -27,18 +27,17 @@ To onboard and align autonomous AI coding agents in other projects with these ex
 
 ## 🌟 Key Architectural Highlights
 
-1. **Pre-Generated Multi-Page Static HTML:**
-   - Standalone static pages (`index.html`, `showcase.html`, `dashboard.html`, `dashboard-nodes.html`).
-   - Uses **Declarative Shadow DOM (DSD)** for instant first contentful paint (FCP) and optimal SEO with zero-FOUC.
+1. **Semantic Multi-Page Static HTML:**
+   - Standalone static pages (`index.html`, `showcase.html`, `dashboard.html`, `dashboard-nodes.html`) delivering immediate First Contentful Paint (FCP) and native search indexability.
 2. **Form-Associated Custom Elements (FACE):**
    - `<login-panel>` uses native `ElementInternals` to participate in `<form>` lifecycle, browser constraint validation, and password managers.
    - Authentication accepts any username and password `joshua`.
 3. **Native Dialogs & Popovers:**
    - Incident triage modal uses native `<dialog>` (`.showModal()`, backdrop, `<form method="dialog">`).
    - Node spec inspections use native HTML **Popover API** (`popover="auto"` and `popovertarget`) with zero JavaScript positioning libraries.
-4. **Fluid View Transitions & Audio Continuity:**
+4. **Fluid View Transitions & Continuous Web Audio:**
    - Seamless client-side transitions using `document.startViewTransition()`.
-   - Ambient Web Audio soundscape (synth drone + sonar pulse) with persistent play, volume, and **Mute/Unmute** controls that continue uninterrupted across views.
+   - Ambient Web Audio soundscape (listening drone + live telemetry threshold beep overlay: 2.0s WARNING / 0.5s CRITICAL) with persistent play, volume, and **Mute/Unmute** controls that continue uninterrupted across views.
 5. **Modern Native CSS:**
    - Organized with CSS `@layer` (`reset`, `tokens`, `base`, `layout`, `components`).
    - Uses CSS Container Queries (`@container`) for modular component responsiveness.

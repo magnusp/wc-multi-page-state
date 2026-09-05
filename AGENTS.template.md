@@ -16,8 +16,8 @@ This document guides AI coding agents in designing and implementing modern, dura
    - Distribute state down the DOM tree using the W3C DOM Context Protocol (`@lit/context` or standard `context-request` custom DOM events).
 4. **Single Responsibility & Purpose-Built Components:**
    - Strictly isolate concerns into small, modular, and testable units. Avoid monolithic catch-all JavaScript files.
-5. **Declarative Pre-Rendering & Zero-FOUC Paint:**
-   - Static HTML entry points must provide semantic markup and Declarative Shadow DOM (DSD) (`<template shadowrootmode="open">`) so search engines and users receive instant paint prior to JavaScript evaluation.
+5. **Semantic Light-DOM Markup & Progressive Enhancement:**
+   - Static HTML entry points must provide semantic, crawlable light-DOM markup and structured CSS so search engines and users receive immediate paint prior to JavaScript evaluation.
 6. **Resilient Session & Multi-Tab Isolation:**
    - Hydrate view state from `sessionStorage` on hard page reloads and tab duplication. Ensure independent tab instance IDs while sharing broadcast telemetry across tabs.
 7. **Local Filesystem & Static Deployment Compatibility:**

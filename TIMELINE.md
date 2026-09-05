@@ -14,7 +14,7 @@ This document tracks the hypothesis, architectural decisions, technical findings
   - Isolate domain state into framework-agnostic classes using standard `EventTarget` (aligned with TC39 Signals), decoupled from the UI.
   - Distribute application state down the DOM tree via the standard W3C Context Protocol (`@lit/context`).
   - Implement Form-Associated Custom Elements (FACE) with native `ElementInternals` for constraint validation and autofill.
-  - Deliver static multi-page entry points pre-rendered with Declarative Shadow DOM (DSD) for instant first contentful paint (FCP) and optimal SEO.
+  - Deliver semantic multi-page static HTML entry points for immediate First Contentful Paint (FCP) and optimal SEO.
   - Leverage native browser capabilities: `<dialog>`, Popover API, View Transitions API, Web Audio API, CSS `@layer`, and CSS `@container` queries.
   - Ensure self-contained bundling in `dist/` with relative asset links (`base: './'`) for direct filesystem execution (`file://`).
 
@@ -22,7 +22,7 @@ This document tracks the hypothesis, architectural decisions, technical findings
 
 ## 2026-09-05: Implementation & Verification
 - **Scaffolding & Tooling:**
-  - Configured Vite with multi-page HTML inputs (`index.html`, `product.html`, `dashboard.html`, `dashboard-nodes.html`) and relative base paths.
+  - Configured Vite with multi-page HTML inputs (`index.html`, `showcase.html`, `dashboard.html`, `dashboard-nodes.html`) and relative base paths.
   - Configured TypeScript, Lit, and Vitest.
 - **CSS Architecture:**
   - Established predictable cascade layers using CSS `@layer` (`reset`, `tokens`, `base`, `layout`, `components`).
@@ -30,13 +30,13 @@ This document tracks the hypothesis, architectural decisions, technical findings
 - **Domain State & Components:**
   - Created standalone, testable domain stores (`AuthStore`, `TelemetryStore`, `AudioStore`) extending `EventTarget`.
   - Built `<login-panel>` as a Form-Associated Custom Element participating in `<form>` submission and browser validation.
-  - Pre-rendered static pages with Declarative Shadow DOM (`<template shadowrootmode="open">`).
+  - Semantic static HTML pages delivering crawlable markup and structured CSS without runtime overhead.
   - Built `<incident-modal>` leveraging native HTML `<dialog>` with `.showModal()`, backdrop styling, and `<form method="dialog">`.
   - Built `<node-popover>` utilizing native `popover="auto"` and `popovertarget`.
   - Implemented `view-router.ts` orchestrating native `document.startViewTransition()` with fallback.
-  - Synthesized ambient drone/pulse audio via Web Audio API with Play, Volume, and instant Mute/Unmute controls, ensuring uninterrupted playback across view transitions.
+  - Synthesized ambient drone/alert audio via Web Audio API with Play, Volume, and instant Mute/Unmute controls, ensuring uninterrupted playback across view transitions.
 - **Automated Verification & Audits:**
-  - Vitest test suite (9/9 passed) verifying domain logic, session persistence, tab duplication isolation, and audio controls.
+  - Vitest test suite verifying domain logic, session persistence, tab duplication isolation, telemetry simulation, and audio alert model.
   - Playwright + axe-core accessibility audit achieved **100% WCAG 2.1 AA and Best-Practices pass rate with 0 violations and 0 console errors across all pages**.
   - Verified local `file://` execution straight from `dist/index.html`.
 
@@ -56,8 +56,8 @@ This document tracks the hypothesis, architectural decisions, technical findings
 - **Native View Transitions & Zero-Bundle SPA Navigation:**
   - Standardized on `document.startViewTransition()` for multi-page static HTML hydration without client-side routing libraries.
   - Intercepted shadow-piercing events via `composedPath()`.
-- **Declarative Shadow DOM (DSD) & Zero-JS Static Pre-Rendering:**
-  - Structured static HTML files with `<template shadowrootmode="open">` to achieve instant First Contentful Paint (FCP) and native search indexability.
+- **Semantic Static HTML Pre-Rendering & Progressive Enhancement:**
+  - Structured static HTML files with semantic light-DOM markup to achieve instant First Contentful Paint (FCP) and native search indexability without SSR complexity.
 - **Native Browser Capabilities:**
   - Standardized on `<dialog>` with `.showModal()` for modal dialogs and the HTML Popover API (`popover="auto"`) for zero-JS floating inspect panels.
   - Implemented ambient soundscape with Web Audio API (`AudioContext`, oscillators, biquad filters) featuring listening mode drone and telemetry-driven threshold alerts (2.0s WARNING / 0.5s CRITICAL beep overlay).

@@ -23,16 +23,7 @@ A reference manual for building modern, resilient web applications leveraging na
 
 ---
 
-## 3. Declarative Shadow DOM (DSD) & Zero-FOUC SEO
-- **WHATWG Standard:** [Declarative Shadow DOM](https://html.spec.whatwg.org/multipage/scripting.html#declarative-shadow-roots)
-- **MDN Guide:** [Declarative Shadow DOM on MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_shadow_DOM#declarative_shadow_dom)
-- **Role in Showcase:**
-  - Implemented across `index.html`, `showcase.html`, `dashboard.html`, and `dashboard-nodes.html`.
-  - Pre-renders content using `<template shadowrootmode="open">` so search engine crawlers and users receive readable markup before any JavaScript executes.
-
----
-
-## 4. Native Dialogs: HTML `<dialog>` Element
+## 3. Native Dialogs: HTML `<dialog>` Element
 - **WHATWG Standard:** [The Dialog Element](https://html.spec.whatwg.org/multipage/interactive-elements.html#the-dialog-element)
 - **MDN Guide:** [`<dialog>` on MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dialog)
 - **Role in Showcase:**
@@ -42,7 +33,7 @@ A reference manual for building modern, resilient web applications leveraging na
 
 ---
 
-## 5. HTML Popover API
+## 4. HTML Popover API
 - **WHATWG Standard:** [The Popover Attribute](https://html.spec.whatwg.org/multipage/popover.html)
 - **MDN Guide:** [Popover API on MDN](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API)
 - **Role in Showcase:**
@@ -52,7 +43,7 @@ A reference manual for building modern, resilient web applications leveraging na
 
 ---
 
-## 6. View Transitions API
+## 5. View Transitions API
 - **W3C Candidate Recommendation:** [CSS View Transitions Module Level 1](https://www.w3.org/TR/css-view-transitions-1/)
 - **MDN Guide:** [View Transitions API on MDN](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API)
 - **Role in Showcase:**
@@ -61,17 +52,18 @@ A reference manual for building modern, resilient web applications leveraging na
 
 ---
 
-## 7. Web Audio API & Uninterrupted Transitions
+## 6. Web Audio API & Dual-Frequency Threshold Overlay
 - **W3C Recommendation:** [Web Audio API](https://www.w3.org/TR/webaudio/)
 - **MDN Guide:** [Web Audio API on MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
 - **Role in Showcase:**
   - Implemented in `src/core/audio/soundscape-engine.ts` and `src/core/store/audio-store.ts`.
-  - Synthesizes a real-time ambient telemetry drone and sonar blip using native `OscillatorNode`, `BiquadFilterNode`, and `GainNode`.
+  - Synthesizes a real-time background drone (operator listening mode) using native `OscillatorNode`, `BiquadFilterNode`, and `GainNode`.
+  - Overlays dynamic alert beeps driven by live telemetry thresholds: 2.0-second intervals for **WARNING** (>70% CPU) and 0.5-second intervals for **CRITICAL** (>85% CPU / >90% Memory). Cordoning nodes sheds their load to calm the loop.
   - Because client navigation preserves shell state, audio continues playing uninterrupted across view transitions between `dashboard.html` and `dashboard-nodes.html`.
 
 ---
 
-## 8. Modern CSS Standards: `@layer` & Container Queries
+## 7. Modern CSS Standards: `@layer` & Container Queries
 - **W3C Standard:** [CSS Cascade Layers](https://www.w3.org/TR/css-cascade-5/#layering) & [CSS Container Queries](https://www.w3.org/TR/css-contain-3/#container-queries)
 - **MDN Guides:**
   - [CSS @layer on MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/@layer)
@@ -82,7 +74,7 @@ A reference manual for building modern, resilient web applications leveraging na
 
 ---
 
-## 9. State Decoupling & Multi-Tab Isolation
+## 8. State Decoupling & Multi-Tab Isolation
 - **WHATWG Standard:** [EventTarget](https://dom.spec.whatwg.org/#interface-eventtarget) & [Web Storage API](https://html.spec.whatwg.org/multipage/webstorage.html)
 - **Role in Showcase:**
   - Stores (`AuthStore`, `TelemetryStore`, `AudioStore`) are pure TypeScript `EventTarget` instances.
