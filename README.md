@@ -22,8 +22,9 @@ This repository and showcase architecture were co-constructed and engineered wit
 For direct links to W3C, WHATWG, and MDN documentation for every web primitive used in this project, see:
 👉 **[STANDARDS_GUIDE.md](./STANDARDS_GUIDE.md)**
 
-To onboard and align autonomous AI coding agents in other projects with these exact native-first principles, copy:
-👉 **[`AGENTS.template.md`](./AGENTS.template.md)** into your repository as `AGENTS.md`.
+To onboard and align autonomous AI coding agents in projects adopting this architecture with **Lit** (using Lit as the lightweight reactive custom element view layer), copy:
+👉 **[`AGENTS.template.md`](./AGENTS.template.md)** into your repository as `AGENTS.md`.  
+*(Note: This template is specifically tailored for Lit-based custom element architectures rather than a generalized, framework-agnostic setup).*
 
 ---
 
