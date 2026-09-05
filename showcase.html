@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AetherWatch | Standards-First Web Development Showcase</title>
+  <meta name="description" content="Evaluating native browser APIs over external framework bloat: Web Components, Form-Associated Custom Elements, DSD, dialogs, popovers, and Web Audio." />
+  <link rel="stylesheet" href="./src/styles/layers.css" />
+</head>
+<body>
+  <app-shell>
+    <!-- Declarative Shadow DOM (DSD) fallback for instant paint -->
+    <template shadowrootmode="open">
+      <slot></slot>
+    </template>
+
+    <main class="main-content">
+      <div style="margin-bottom: 2rem;">
+        <span style="font-size: 0.8rem; color: var(--color-primary); font-family: var(--font-family-mono); font-weight: 600;">
+          STANDARDS_GUIDE.md &bull; ARCHITECTURAL SHOWCASE
+        </span>
+        <h1 style="font-size: 2.2rem; margin-top: 0.25rem; margin-bottom: 0.5rem;">Standards-First Web Architecture</h1>
+        <p style="color: var(--color-text-muted); font-size: 1.05rem; max-width: 800px;">
+          A living showcase evaluating modern web platform primitives and lightweight custom elements against heavyweight framework abstractions.
+        </p>
+      </div>
+
+      <article class="showcase-card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-primary);">
+        <div class="showcase-card-header">
+          <h2 class="showcase-card-title">Philosophy: Standards Over Framework Lock-In</h2>
+          <span class="showcase-badge">Core Thesis</span>
+        </div>
+        <p class="showcase-card-desc">
+          Can modern web standards reproduce the clean separation of concerns and robust testability historically sought through proprietary application frameworks, while eliminating runtime bloat and fragile hydration hierarchies? This showcase demonstrates that native platform APIs provide production-grade answers for every architectural requirement.
+        </p>
+      </article>
+
+      <div class="showcase-grid">
+        <!-- 1. Component Model -->
+        <section class="showcase-card">
+          <div class="showcase-card-header">
+            <h2 class="showcase-card-title">1. Component Model & Lit</h2>
+            <span class="showcase-badge">Custom Elements + Shadow DOM</span>
+          </div>
+          <p class="showcase-card-desc">
+            Standard custom elements registered natively via <code>customElements.define()</code>. Lit is adopted purely as a minimal reactive view layer (~5KB gzipped), eliminating proprietary virtual DOM reconcilers or runtime lock-in.
+          </p>
+          <div class="showcase-card-footer">
+            <span>Standard: <strong>W3C Custom Elements</strong></span>
+            <a href="https://html.spec.whatwg.org/multipage/custom-elements.html" target="_blank" rel="noopener">Spec &rarr;</a>
+          </div>
+        </section>
+
+        <!-- 2. Form-Associated Custom Elements -->
+        <section class="showcase-card">
+          <div class="showcase-card-header">
+            <h2 class="showcase-card-title">2. Form-Associated Custom Elements</h2>
+            <span class="showcase-badge">ElementInternals</span>
+          </div>
+          <p class="showcase-card-desc">
+            Built using <code>this.attachInternals()</code> with <code>static formAssociated = true</code>. Participates directly in native <code>&lt;form&gt;</code> lifecycle, <code>setValidity()</code> constraint validation, and browser password autofill without external form libraries.
+          </p>
+          <div class="showcase-card-footer">
+            <span>Standard: <strong>WHATWG FACE</strong></span>
+            <a href="https://html.spec.whatwg.org/multipage/custom-elements.html#form-associated-custom-elements" target="_blank" rel="noopener">Spec &rarr;</a>
+          </div>
+        </section>
+
+        <!-- 3. Declarative Shadow DOM -->
+        <section class="showcase-card">
+          <div class="showcase-card-header">
+            <h2 class="showcase-card-title">3. Declarative Shadow DOM (DSD)</h2>
+            <span class="showcase-badge">Zero-FOUC SEO</span>
+          </div>
+          <p class="showcase-card-desc">
+            Multi-page entry points pre-render using <code>&lt;template shadowrootmode="open"&gt;</code>. Search engine crawlers and users receive instant First Contentful Paint (FCP) and full semantic markup prior to JavaScript execution.
+          </p>
+          <div class="showcase-card-footer">
+            <span>Standard: <strong>WHATWG DSD</strong></span>
+            <a href="https://html.spec.whatwg.org/multipage/scripting.html#declarative-shadow-roots" target="_blank" rel="noopener">Spec &rarr;</a>
+          </div>
+        </section>
+
+        <!-- 4. Native Dialogs -->
+        <section class="showcase-card">
+          <div class="showcase-card-header">
+            <h2 class="showcase-card-title">4. Native HTML &lt;dialog&gt;</h2>
+            <span class="showcase-badge">Top Layer & Backdrop</span>
+          </div>
+          <p class="showcase-card-desc">
+            Employs <code>.showModal()</code> for native top-layer stacking, automatic focus trapping, <code>&lt;Esc&gt;</code> dismissal, and <code>::backdrop</code> styling. Clean submission and dismissal via standard <code>&lt;form method="dialog"&gt;</code>.
+          </p>
+          <div class="showcase-card-footer">
+            <span>Standard: <strong>WHATWG Dialog</strong></span>
+            <a href="https://html.spec.whatwg.org/multipage/interactive-elements.html#the-dialog-element" target="_blank" rel="noopener">Spec &rarr;</a>
+          </div>
+        </section>
+
+        <!-- 5. HTML Popover API -->
+        <section class="showcase-card">
+          <div class="showcase-card-header">
+            <h2 class="showcase-card-title">5. HTML Popover API</h2>
+            <span class="showcase-badge">Zero-JS Overlays</span>
+          </div>
+          <p class="showcase-card-desc">
+            Replaces bulky floating/overlay libraries (Popper, Floating UI). Utilizes declarative <code>popover="auto"</code> and <code>popovertarget</code> for light-dismiss, top-layer placement, and built-in accessibility.
+          </p>
+          <div class="showcase-card-footer">
+            <span>Standard: <strong>WHATWG Popover</strong></span>
+            <a href="https://html.spec.whatwg.org/multipage/popover.html" target="_blank" rel="noopener">Spec &rarr;</a>
+          </div>
+        </section>
+
+        <!-- 6. View Transitions API -->
+        <section class="showcase-card">
+          <div class="showcase-card-header">
+            <h2 class="showcase-card-title">6. View Transitions API</h2>
+            <span class="showcase-badge">Native Morphing</span>
+          </div>
+          <p class="showcase-card-desc">
+            Employs <code>document.startViewTransition()</code> to smoothly interpolate multi-page HTML updates without hard page flashes, retaining audio context and persistent application shell state.
+          </p>
+          <div class="showcase-card-footer">
+            <span>Standard: <strong>W3C View Transitions</strong></span>
+            <a href="https://www.w3.org/TR/css-view-transitions-1/" target="_blank" rel="noopener">Spec &rarr;</a>
+          </div>
+        </section>
+
+        <!-- 7. Web Audio API -->
+        <section class="showcase-card">
+          <div class="showcase-card-header">
+            <h2 class="showcase-card-title">7. Web Audio API & Threshold Overlay</h2>
+            <span class="showcase-badge">Dynamic Soundscape</span>
+          </div>
+          <p class="showcase-card-desc">
+            Synthesizes background drone audio indicating listening mode. Dynamically overlays alert beeps when nodes exceed thresholds: <strong>WARNING</strong> (2.0s interval) and <strong>CRITICAL</strong> (0.5s interval), continuing seamlessly across page transitions.
+          </p>
+          <div class="showcase-card-footer">
+            <span>Standard: <strong>W3C Web Audio API</strong></span>
+            <a href="https://www.w3.org/TR/webaudio/" target="_blank" rel="noopener">Spec &rarr;</a>
+          </div>
+        </section>
+
+        <!-- 8. CSS @layer & Container Queries -->
+        <section class="showcase-card">
+          <div class="showcase-card-header">
+            <h2 class="showcase-card-title">8. CSS @layer & @container Queries</h2>
+            <span class="showcase-badge">Modern Cascade</span>
+          </div>
+          <p class="showcase-card-desc">
+            Cascades structured deterministically with CSS <code>@layer</code> (reset, tokens, base, layout, components). Grid elements respond to container dimensions using <code>@container</code> queries rather than global viewport media queries.
+          </p>
+          <div class="showcase-card-footer">
+            <span>Standard: <strong>W3C CSS Containment</strong></span>
+            <a href="https://www.w3.org/TR/css-contain-3/" target="_blank" rel="noopener">Spec &rarr;</a>
+          </div>
+        </section>
+
+        <!-- 9. State Decoupling & Multi-Tab Isolation -->
+        <section class="showcase-card" style="grid-column: 1 / -1;">
+          <div class="showcase-card-header">
+            <h2 class="showcase-card-title">9. State Decoupling & Multi-Tab Isolation</h2>
+            <span class="showcase-badge">EventTarget + sessionStorage</span>
+          </div>
+          <p class="showcase-card-desc">
+            Domain stores (<code>AuthStore</code>, <code>TelemetryStore</code>, <code>AudioStore</code>) extend standard browser <code>EventTarget</code>, completely decoupled from UI components and distributed via W3C DOM Context. Tab duplication is handled natively via <code>sessionStorage</code> cloning while retaining unique per-window tab IDs.
+          </p>
+          <div class="showcase-card-footer">
+            <span>Standard: <strong>WHATWG DOM & Web Storage</strong></span>
+            <a href="https://dom.spec.whatwg.org/#interface-eventtarget" target="_blank" rel="noopener">Spec &rarr;</a>
+          </div>
+        </section>
+      </div>
+
+      <div style="margin-top: 2.5rem; text-align: center;">
+        <a href="index.html" style="font-size: 0.95rem; font-weight: 600;">
+          &larr; Return to Gateway Login
+        </a>
+      </div>
+    </main>
+  </app-shell>
+
+  <script type="module" src="./src/components/app-shell.ts"></script>
+</body>
+</html>

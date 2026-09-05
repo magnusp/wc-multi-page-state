@@ -96,6 +96,21 @@ export class AppShell extends LitElement {
 
       window.__AETHER_SHELL__ = this;
       window.__SHELL_BOOTED__ = true;
+
+      // Coordinate telemetry thresholds with Web Audio soundscape:
+      // - If any node is 'critical' -> setAlertState('critical') (0.5s beep interval)
+      // - Else if any node is 'warning' -> setAlertState('warning') (2.0s beep interval)
+      // - Else -> setAlertState('healthy') (ambient drone only)
+      this.telemetryStore.addEventListener('telemetry-tick', (e: Event) => {
+        const nodes = (e as CustomEvent).detail.nodes as Array<{ status: 'healthy' | 'warning' | 'critical' }>;
+        if (nodes.some(n => n.status === 'critical')) {
+          this.audioStore.setAlertState('critical');
+        } else if (nodes.some(n => n.status === 'warning')) {
+          this.audioStore.setAlertState('warning');
+        } else {
+          this.audioStore.setAlertState('healthy');
+        }
+      });
     }
   }
 

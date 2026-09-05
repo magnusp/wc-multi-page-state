@@ -249,7 +249,7 @@ export class AppHeader extends LitElement {
 
         <nav aria-label="Main Navigation">
           <a href="index.html">Gateway</a>
-          <a href="product.html">Specs & SEO</a>
+          <a href="showcase.html">Standards Showcase</a>
           ${this.currentUser ? html`
             <a href="dashboard.html">Telemetry</a>
             <a href="dashboard-nodes.html">Nodes</a>

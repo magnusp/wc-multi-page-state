@@ -42,4 +42,25 @@ describe('AudioStore', () => {
     expect(newStore.muted).toBe(true);
     expect(newStore.volume).toBeCloseTo(0.75);
   });
+
+  it('manages telemetry alert threshold states (healthy, warning, critical)', () => {
+    expect(store.alertState).toBe('healthy');
+
+    let notifiedState = '';
+    store.addEventListener('audio-changed', (e: Event) => {
+      notifiedState = (e as CustomEvent).detail.alertState;
+    });
+
+    store.setAlertState('warning');
+    expect(store.alertState).toBe('warning');
+    expect(notifiedState).toBe('warning');
+
+    store.setAlertState('critical');
+    expect(store.alertState).toBe('critical');
+    expect(notifiedState).toBe('critical');
+
+    store.setAlertState('healthy');
+    expect(store.alertState).toBe('healthy');
+    expect(notifiedState).toBe('healthy');
+  });
 });

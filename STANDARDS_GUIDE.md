@@ -27,7 +27,7 @@ A reference manual for building modern, resilient web applications leveraging na
 - **WHATWG Standard:** [Declarative Shadow DOM](https://html.spec.whatwg.org/multipage/scripting.html#declarative-shadow-roots)
 - **MDN Guide:** [Declarative Shadow DOM on MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_shadow_DOM#declarative_shadow_dom)
 - **Role in Showcase:**
-  - Implemented across `index.html`, `product.html`, `dashboard.html`, and `dashboard-nodes.html`.
+  - Implemented across `index.html`, `showcase.html`, `dashboard.html`, and `dashboard-nodes.html`.
   - Pre-renders content using `<template shadowrootmode="open">` so search engine crawlers and users receive readable markup before any JavaScript executes.
 
 ---

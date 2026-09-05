@@ -28,7 +28,7 @@ To onboard and align autonomous AI coding agents in other projects with these ex
 ## 🌟 Key Architectural Highlights
 
 1. **Pre-Generated Multi-Page Static HTML:**
-   - Standalone static pages (`index.html`, `product.html`, `dashboard.html`, `dashboard-nodes.html`).
+   - Standalone static pages (`index.html`, `showcase.html`, `dashboard.html`, `dashboard-nodes.html`).
    - Uses **Declarative Shadow DOM (DSD)** for instant first contentful paint (FCP) and optimal SEO with zero-FOUC.
 2. **Form-Associated Custom Elements (FACE):**
    - `<login-panel>` uses native `ElementInternals` to participate in `<form>` lifecycle, browser constraint validation, and password managers.

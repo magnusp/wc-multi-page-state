@@ -8,7 +8,8 @@ export class SoundscapeEngine {
   private masterGain: GainNode | null = null;
   private droneOsc1: OscillatorNode | null = null;
   private droneOsc2: OscillatorNode | null = null;
-  private sonarInterval: number | null = null;
+  private alertInterval: number | null = null;
+  private alertState: 'healthy' | 'warning' | 'critical' = 'healthy';
   private isRunning: boolean = false;
 
   public init(): void {
@@ -59,30 +60,70 @@ export class SoundscapeEngine {
     this.droneOsc1.start();
     this.droneOsc2.start();
 
-    // Occasional Sonar / Telemetry pulse every 7 seconds
-    this.sonarInterval = window.setInterval(() => {
-      this.playSonarPing();
-    }, 7000);
+    // Start alert loop if warning or critical already active
+    this.restartAlertLoop();
   }
 
-  private playSonarPing(): void {
+  /**
+   * Updates threshold state:
+   * - healthy: drone only (listening mode)
+   * - warning: 2.0 second interval beep overlay
+   * - critical: 0.5 second interval beep overlay
+   */
+  public setAlertState(state: 'healthy' | 'warning' | 'critical'): void {
+    if (this.alertState === state) return;
+    this.alertState = state;
+    if (this.isRunning) {
+      this.restartAlertLoop();
+    }
+  }
+
+  public get currentAlertState(): 'healthy' | 'warning' | 'critical' {
+    return this.alertState;
+  }
+
+  private restartAlertLoop(): void {
+    if (this.alertInterval !== null) {
+      clearInterval(this.alertInterval);
+      this.alertInterval = null;
+    }
+
+    if (this.alertState === 'healthy' || !this.isRunning) {
+      return;
+    }
+
+    const currentSeverity: 'warning' | 'critical' = this.alertState;
+    const intervalMs = currentSeverity === 'critical' ? 500 : 2000;
+    // Play immediate beep on transition
+    this.playAlertBeep(currentSeverity);
+
+    this.alertInterval = window.setInterval(() => {
+      this.playAlertBeep(currentSeverity);
+    }, intervalMs);
+  }
+
+  private playAlertBeep(severity: 'warning' | 'critical'): void {
     if (!this.ctx || !this.masterGain || !this.isRunning) return;
 
-    const pingOsc = this.ctx.createOscillator();
-    const pingGain = this.ctx.createGain();
+    const beepOsc = this.ctx.createOscillator();
+    const beepGain = this.ctx.createGain();
 
-    pingOsc.type = 'sine';
-    pingOsc.frequency.setValueAtTime(880, this.ctx.currentTime); // A5 ping
-    pingOsc.frequency.exponentialRampToValueAtTime(440, this.ctx.currentTime + 0.8);
+    // Higher, more urgent tone for critical
+    const freq = severity === 'critical' ? 1174.66 : 784.0; // D6 or G5
+    const duration = severity === 'critical' ? 0.12 : 0.18;
+    const peakVolume = severity === 'critical' ? 0.09 : 0.06;
 
-    pingGain.gain.setValueAtTime(0.04, this.ctx.currentTime);
-    pingGain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.9);
+    beepOsc.type = severity === 'critical' ? 'square' : 'sine';
+    beepOsc.frequency.setValueAtTime(freq, this.ctx.currentTime);
 
-    pingOsc.connect(pingGain);
-    pingGain.connect(this.masterGain);
+    beepGain.gain.setValueAtTime(peakVolume, this.ctx.currentTime);
+    beepGain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
 
-    pingOsc.start();
-    pingOsc.stop(this.ctx.currentTime + 1.0);
+    beepOsc.connect(beepGain);
+    beepGain.connect(this.masterGain);
+
+    beepOsc.start();
+    beepOsc.stop(this.ctx.currentTime + duration);
   }
 
   public setVolume(val: number): void {
@@ -95,9 +136,9 @@ export class SoundscapeEngine {
     if (!this.isRunning) return;
     this.isRunning = false;
 
-    if (this.sonarInterval !== null) {
-      clearInterval(this.sonarInterval);
-      this.sonarInterval = null;
+    if (this.alertInterval !== null) {
+      clearInterval(this.alertInterval);
+      this.alertInterval = null;
     }
 
     try {

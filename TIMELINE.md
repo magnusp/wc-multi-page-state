@@ -60,6 +60,7 @@ This document tracks the hypothesis, architectural decisions, technical findings
   - Structured static HTML files with `<template shadowrootmode="open">` to achieve instant First Contentful Paint (FCP) and native search indexability.
 - **Native Browser Capabilities:**
   - Standardized on `<dialog>` with `.showModal()` for modal dialogs and the HTML Popover API (`popover="auto"`) for zero-JS floating inspect panels.
-  - Implemented ambient soundscape with Web Audio API (`AudioContext`, oscillators, biquad filters).
+  - Implemented ambient soundscape with Web Audio API (`AudioContext`, oscillators, biquad filters) featuring listening mode drone and telemetry-driven threshold alerts (2.0s WARNING / 0.5s CRITICAL beep overlay).
   - Adopted CSS `@layer` for cascade management and CSS `@container` queries for modular component responsiveness.
+
 

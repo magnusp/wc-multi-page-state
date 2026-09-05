@@ -9,7 +9,7 @@ const distDir = path.resolve(__dirname, '../dist');
 
 const pages = [
   { name: 'Index (Gateway & FACE Login)', file: 'index.html' },
-  { name: 'Product (Specs & SEO)', file: 'product.html' },
+  { name: 'Showcase (Standards Guide & SEO)', file: 'showcase.html' },
   { name: 'Dashboard (Telemetry Matrix)', file: 'dashboard.html' },
   { name: 'Dashboard Nodes (Continuity)', file: 'dashboard-nodes.html' }
 ];

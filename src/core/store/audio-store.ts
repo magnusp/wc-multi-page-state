@@ -81,6 +81,15 @@ export class AudioStore extends EventTarget {
     this.notifyState();
   }
 
+  public setAlertState(state: 'healthy' | 'warning' | 'critical'): void {
+    this.engine.setAlertState(state);
+    this.notifyState();
+  }
+
+  public get alertState(): 'healthy' | 'warning' | 'critical' {
+    return this.engine.currentAlertState;
+  }
+
   public setVolume(newVolume: number): void {
     this.volumeLevel = Math.max(0, Math.min(1, newVolume));
     if (!this.isMuted) {
@@ -95,7 +104,8 @@ export class AudioStore extends EventTarget {
       detail: {
         isPlaying: this.engine.running,
         muted: this.isMuted,
-        volume: this.volumeLevel
+        volume: this.volumeLevel,
+        alertState: this.engine.currentAlertState
       }
     }));
   }
