@@ -2,6 +2,8 @@
 
 A production-grade, standards-first showcase demonstrating modern Web Components built with **Lit** as a minimal presentation layer, **Pure TypeScript Domain Stores** (aligned with TC39 Signals and standard `EventTarget`), and **Native Web Platform APIs**.
 
+🌐 **Live Demo:** [https://magnusp.github.io/wc-multi-page-state/](https://magnusp.github.io/wc-multi-page-state/)
+
 ---
 
 ## 🤖 Provenance & Attestation
@@ -41,7 +43,10 @@ To onboard and align autonomous AI coding agents in other projects with these ex
 5. **Modern Native CSS:**
    - Organized with CSS `@layer` (`reset`, `tokens`, `base`, `layout`, `components`).
    - Uses CSS Container Queries (`@container`) for modular component responsiveness.
-6. **Multi-Tab Hydration, Storage Dependency Injection & `file://` Direct Execution:**
+6. **Native Virtualization & IntersectionObserver Paging:**
+   - Single-column showcase layout using native `content-visibility: auto` paired with `contain-intrinsic-size` to skip rendering off-screen elements without userland DOM-recycling hacks.
+   - Paired with an interactive `<infinite-feed-demo>` using `IntersectionObserver` sentinel paging for on-demand chunking while preserving full accessibility and `Ctrl+F` search.
+7. **Multi-Tab Hydration, Storage Dependency Injection & `file://` Direct Execution:**
    - Built to run seamlessly straight from the local filesystem (`file:///.../dist/index.html`).
    - Storage abstracted via `StorageLike` with constructor dependency injection and in-memory `MemoryStorage` fallback for test isolation.
    - Supports transparent tab duplication and hard refreshes using session storage.

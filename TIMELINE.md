@@ -58,6 +58,12 @@ This document tracks the hypothesis, architectural decisions, technical findings
   - Abstracted browser storage behind a `StorageLike` contract with an in-memory `MemoryStorage` fallback.
   - Refactored `AuthStore` and `AudioStore` constructors to accept optional storage dependencies with safe default detection (`getDefaultStorage()`).
   - Eliminated global state coupling, ensuring clean test isolation, SSR safety, and defense against private-browsing `SecurityError` exceptions.
+- **Native Virtualization & IntersectionObserver Paging:**
+  - Adapted Standards Showcase to a single-column reading measure, applying `content-visibility: auto` paired with `contain-intrinsic-size: auto 180px` to optimize layout rendering without userland DOM recycling.
+  - Built interactive `<infinite-feed-demo>` showcasing native `IntersectionObserver` sentinel paging for on-demand chunking while retaining native find-in-page (`Ctrl+F`) and accessibility tree integrity.
+- **Automated CI/CD & GitHub Pages Deployment:**
+  - Configured zero-dependency GitHub Actions workflow (`.github/workflows/deploy.yml`) utilizing latest action versions (`checkout@v7`, `setup-pnpm@v6`, `setup-node@v7`, `configure-pages@v6`, `deploy-pages@v5`).
+  - Successfully deploys static bundle with relative asset resolution to GitHub Pages on push to `main`.
 
 
 
