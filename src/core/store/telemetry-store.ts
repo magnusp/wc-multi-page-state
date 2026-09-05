@@ -66,6 +66,7 @@ export class TelemetryStore extends EventTarget {
   }
 
   public resolveIncident(): void {
+    if (!this.activeIncident) return;
     this.activeIncident = null;
     this.dispatchEvent(new CustomEvent('incident-resolved'));
   }

@@ -40,6 +40,10 @@ export class TelemetryGrid extends LitElement {
 
   private onIncidentResolved = () => {
     this.activeIncident = null;
+  };
+
+  private handleModalResolve = () => {
+    this.activeIncident = null;
     this.telemetryStore?.resolveIncident();
   };
 
@@ -336,7 +340,7 @@ export class TelemetryGrid extends LitElement {
       <!-- Native <dialog> Modal -->
       <incident-modal
         .incident=${this.activeIncident}
-        @incident-resolved=${this.onIncidentResolved}
+        @incident-resolved=${this.handleModalResolve}
       ></incident-modal>
     `;
   }
