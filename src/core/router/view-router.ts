@@ -94,6 +94,16 @@ export class ViewRouter extends EventTarget {
       if (newMain && currentMain) {
         currentMain.innerHTML = newMain.innerHTML;
       }
+
+      // Dynamically load page module scripts to register page-specific custom elements
+      const scripts = doc.querySelectorAll('script[type="module"]');
+      for (const script of scripts) {
+        const src = script.getAttribute('src');
+        if (src) {
+          const resolved = new URL(src, window.location.href).href;
+          import(/* @vite-ignore */ resolved).catch(() => {});
+        }
+      }
     } catch {
       // If fetch fails (e.g. strict file:// security sandbox on certain browsers), fallback to natural browser navigation
       window.location.href = url;

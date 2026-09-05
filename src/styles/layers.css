@@ -10,6 +10,10 @@
     padding: 0;
   }
 
+  html {
+    scrollbar-gutter: stable;
+  }
+
   html, body {
     height: 100%;
   }
@@ -64,6 +68,12 @@
     margin: 0 auto;
     padding: 2rem 1.5rem;
     view-transition-name: main-view;
+  }
+
+  .showcase-container {
+    width: 100%;
+    max-width: 860px;
+    margin: 0 auto;
   }
 }
 

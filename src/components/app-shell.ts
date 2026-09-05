@@ -7,13 +7,8 @@ import { TelemetryStore } from '../core/store/telemetry-store.js';
 import { AudioStore } from '../core/store/audio-store.js';
 import { ViewRouter } from '../core/router/view-router.js';
 
-// Register companion components
+// Register root shell components
 import './app-header.js';
-import './login-panel.js';
-import './telemetry-grid.js';
-import './nodes-view.js';
-import './ui-card.js';
-import './infinite-feed-demo.js';
 
 declare global {
   interface Window {

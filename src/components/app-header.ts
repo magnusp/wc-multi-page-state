@@ -45,8 +45,13 @@ export class AppHeader extends LitElement {
   }
 
   static styles = css`
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
     :host {
       display: block;
+      box-sizing: border-box;
       background: var(--color-bg-surface, #111726);
       border-bottom: 1px solid var(--color-border, #24304d);
       position: sticky;

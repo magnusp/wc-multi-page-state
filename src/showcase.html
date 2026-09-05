@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AetherWatch | Standards-First Web Development Showcase</title>
   <meta name="description" content="Evaluating native browser APIs over external framework bloat: Web Components, Form-Associated Custom Elements, DSD, dialogs, popovers, and Web Audio." />
-  <link rel="stylesheet" href="../styles/layers.css" />
+  <link rel="stylesheet" href="./styles/layers.css" />
 </head>
 <body>
   <app-shell>
     <main class="main-content">
-      <div style="margin-bottom: 2rem;">
+      <div class="showcase-container">
+        <div style="margin-bottom: 2rem;">
         <span style="font-size: 0.8rem; color: var(--color-primary); font-family: var(--font-family-mono); font-weight: 600;">
           STANDARDS_GUIDE.md &bull; ARCHITECTURAL SHOWCASE
         </span>
@@ -171,14 +172,15 @@
         </section>
       </div>
 
-      <div style="margin-top: 2.5rem; text-align: center;">
-        <a href="index.html" style="font-size: 0.95rem; font-weight: 600;">
-          &larr; Return to Gateway Login
-        </a>
+        <div style="margin-top: 2.5rem; text-align: center;">
+          <a href="index.html" style="font-size: 0.95rem; font-weight: 600;">
+            &larr; Return to Gateway Login
+          </a>
+        </div>
       </div>
     </main>
   </app-shell>
 
-  <script type="module" src="../components/app-shell.ts"></script>
+  <script type="module" src="./pages/showcase.ts"></script>
 </body>
 </html>
