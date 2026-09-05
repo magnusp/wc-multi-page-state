@@ -98,14 +98,16 @@ export class AppShell extends LitElement {
       window.__SHELL_BOOTED__ = true;
 
       // Coordinate telemetry thresholds with Web Audio soundscape:
-      // - If any node is 'critical' -> setAlertState('critical') (0.5s beep interval)
-      // - Else if any node is 'warning' -> setAlertState('warning') (2.0s beep interval)
+      // - Active, uncordoned nodes drive cluster alarm status:
+      // - If any active node is 'critical' -> setAlertState('critical') (0.5s beep interval)
+      // - Else if any active node is 'warning' -> setAlertState('warning') (2.0s beep interval)
       // - Else -> setAlertState('healthy') (ambient drone only)
       this.telemetryStore.addEventListener('telemetry-tick', (e: Event) => {
-        const nodes = (e as CustomEvent).detail.nodes as Array<{ status: 'healthy' | 'warning' | 'critical' }>;
-        if (nodes.some(n => n.status === 'critical')) {
+        const nodes = (e as CustomEvent).detail.nodes as Array<{ status: 'healthy' | 'warning' | 'critical'; isCordoned?: boolean }>;
+        const activeNodes = nodes.filter(n => !n.isCordoned);
+        if (activeNodes.some(n => n.status === 'critical')) {
           this.audioStore.setAlertState('critical');
-        } else if (nodes.some(n => n.status === 'warning')) {
+        } else if (activeNodes.some(n => n.status === 'warning')) {
           this.audioStore.setAlertState('warning');
         } else {
           this.audioStore.setAlertState('healthy');

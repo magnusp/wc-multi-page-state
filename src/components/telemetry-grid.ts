@@ -167,6 +167,7 @@ export class TelemetryGrid extends LitElement {
     .card.status-healthy { border-left: 4px solid var(--color-success, #34d399); }
     .card.status-warning { border-left: 4px solid var(--color-warning, #fbbf24); }
     .card.status-critical { border-left: 4px solid var(--color-danger, #f87171); }
+    .card.status-cordoned { border-left: 4px solid var(--color-text-faint, #64748b); opacity: 0.75; }
 
     .node-header {
       display: flex;
@@ -272,10 +273,13 @@ export class TelemetryGrid extends LitElement {
 
       <div class="grid">
         ${this.nodes.map(node => html`
-          <div class="card status-${node.status}">
+          <div class="card ${node.isCordoned ? 'status-cordoned' : `status-${node.status}`}">
             <div class="node-header">
               <div>
-                <div class="node-name">${node.name}</div>
+                <div class="node-name">
+                  ${node.name}
+                  ${node.isCordoned ? html`<span style="font-size: 0.7rem; color: var(--color-warning); font-weight: normal; margin-left: 0.35rem;">(Cordoned)</span>` : null}
+                </div>
                 <div class="node-region">${node.region}</div>
               </div>
             </div>

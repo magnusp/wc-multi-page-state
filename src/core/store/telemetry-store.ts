@@ -7,6 +7,7 @@ export interface TelemetryNode {
   memoryUsage: number; // percentage
   latencyMs: number;
   lastUpdated: number;
+  isCordoned?: boolean;
 }
 
 export interface TelemetryIncident {
@@ -34,10 +35,10 @@ export class TelemetryStore extends EventTarget {
 
   private initDefaultNodes(): void {
     this.nodes = [
-      { id: 'node-alpha', name: 'US-East Core Alpha', region: 'us-east-1', status: 'healthy', cpuLoad: 24, memoryUsage: 45, latencyMs: 14, lastUpdated: Date.now() },
-      { id: 'node-beta', name: 'EU-Central Edge Beta', region: 'eu-west-1', status: 'healthy', cpuLoad: 38, memoryUsage: 62, latencyMs: 32, lastUpdated: Date.now() },
-      { id: 'node-gamma', name: 'AP-Tokyo Gateway Gamma', region: 'ap-northeast-1', status: 'warning', cpuLoad: 78, memoryUsage: 88, latencyMs: 142, lastUpdated: Date.now() },
-      { id: 'node-delta', name: 'US-West Replica Delta', region: 'us-west-2', status: 'healthy', cpuLoad: 19, memoryUsage: 33, latencyMs: 22, lastUpdated: Date.now() }
+      { id: 'node-alpha', name: 'US-East Core Alpha', region: 'us-east-1', status: 'healthy', cpuLoad: 24, memoryUsage: 45, latencyMs: 14, lastUpdated: Date.now(), isCordoned: false },
+      { id: 'node-beta', name: 'EU-Central Edge Beta', region: 'eu-west-1', status: 'healthy', cpuLoad: 38, memoryUsage: 62, latencyMs: 32, lastUpdated: Date.now(), isCordoned: false },
+      { id: 'node-gamma', name: 'AP-Tokyo Gateway Gamma', region: 'ap-northeast-1', status: 'warning', cpuLoad: 78, memoryUsage: 88, latencyMs: 142, lastUpdated: Date.now(), isCordoned: false },
+      { id: 'node-delta', name: 'US-West Replica Delta', region: 'us-west-2', status: 'healthy', cpuLoad: 19, memoryUsage: 33, latencyMs: 22, lastUpdated: Date.now(), isCordoned: false }
     ];
   }
 
@@ -69,10 +70,46 @@ export class TelemetryStore extends EventTarget {
     this.dispatchEvent(new CustomEvent('incident-resolved'));
   }
 
+  /**
+   * Toggles the cordon status of a relay node.
+   * When cordoned, node is excluded from traffic routing, load sheds down to baseline idle (~5-10%),
+   * and latency decouples from active cluster traffic.
+   */
+  public toggleCordon(nodeId: string): void {
+    this.nodes = this.nodes.map(node => {
+      if (node.id !== nodeId) return node;
+      const isCordoned = !node.isCordoned;
+      return {
+        ...node,
+        isCordoned,
+        // Immediate cooling / load shedding if cordoned
+        cpuLoad: isCordoned ? Math.min(node.cpuLoad, 12) : node.cpuLoad,
+        memoryUsage: isCordoned ? Math.min(node.memoryUsage, 25) : node.memoryUsage,
+        status: isCordoned ? 'healthy' : node.status,
+        lastUpdated: Date.now()
+      };
+    });
+    this.dispatchEvent(new CustomEvent('telemetry-tick', { detail: { nodes: this.nodes } }));
+  }
+
   private startSimulation(): void {
     if (typeof window === 'undefined') return;
     this.timer = window.setInterval(() => {
       this.nodes = this.nodes.map(node => {
+        if (node.isCordoned) {
+          // Cordoned node is isolated from traffic: maintains calm idle baseline
+          const idleCpu = Math.max(4, Math.min(15, Math.round(node.cpuLoad + (Math.random() - 0.5) * 1.5)));
+          const idleMem = Math.max(15, Math.min(28, Math.round(node.memoryUsage + (Math.random() - 0.5) * 1.0)));
+          return {
+            ...node,
+            cpuLoad: idleCpu,
+            memoryUsage: idleMem,
+            status: 'healthy',
+            latencyMs: 0,
+            lastUpdated: Date.now()
+          };
+        }
+
         const deltaCpu = (Math.random() - 0.48) * 4;
         const deltaMem = (Math.random() - 0.48) * 2;
         const newCpu = Math.max(5, Math.min(99, Math.round(node.cpuLoad + deltaCpu)));
