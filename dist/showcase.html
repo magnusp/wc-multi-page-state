@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AetherWatch | Standards-First Web Development Showcase</title>
   <meta name="description" content="Evaluating native browser APIs over external framework bloat: Web Components, Form-Associated Custom Elements, DSD, dialogs, popovers, and Web Audio." />
-  <script type="module" crossorigin src="./assets/app-shell-CWHhqoEV.js"></script>
+  <script type="module" crossorigin src="./assets/app-shell-WFFLd02c.js"></script>
   <link rel="stylesheet" crossorigin href="./assets/app-shell-BTfzllxv.css">
 </head>
 <body>
@@ -137,18 +137,22 @@
           </div>
         </section>
 
-        <!-- 8. Native Virtualization: content-visibility -->
+        <!-- 8. Native Virtualization & IntersectionObserver -->
         <section class="showcase-card">
           <div class="showcase-card-header">
-            <h2 class="showcase-card-title">8. Native Virtualization: content-visibility & contain-intrinsic-size</h2>
-            <span class="showcase-badge">Engine-Level Virtualization</span>
+            <h2 class="showcase-card-title">8. Native Virtualization & IntersectionObserver Paging</h2>
+            <span class="showcase-badge">content-visibility + Sentinel Paging</span>
           </div>
           <p class="showcase-card-desc">
-            This showcase page leverages <code>content-visibility: auto</code> paired with <code>contain-intrinsic-size: auto 180px</code> on each single-column card. Rather than using userland JavaScript DOM recycling (such as virtualizer libraries that break in-page find <code>Ctrl+F</code> and fragment accessibility trees), the browser engine natively skips layout, style calculation, and painting for off-screen cards while keeping all nodes accessible.
+            Rather than importing heavy virtual-scroller libraries that disrupt screen readers and break native in-page search (<code>Ctrl+F</code>), this showcase pairs <code>content-visibility: auto</code> with a native <code>IntersectionObserver</code> sentinel. The browser engine skips layout/paint for offscreen items, while the sentinel seamlessly triggers on-demand data chunking as users scroll.
           </p>
+
+          <!-- Interactive Shower Component -->
+          <infinite-feed-demo></infinite-feed-demo>
+
           <div class="showcase-card-footer">
-            <span>Standard: <strong>CSS Containment Level 2</strong></span>
-            <a href="https://www.w3.org/TR/css-contain-2/#content-visibility" target="_blank" rel="noopener">Spec &rarr;</a>
+            <span>Standards: <strong>CSS Containment L2</strong> & <strong>Intersection Observer API</strong></span>
+            <a href="https://www.w3.org/TR/intersection-observer/" target="_blank" rel="noopener">Spec &rarr;</a>
           </div>
         </section>
 

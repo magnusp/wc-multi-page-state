@@ -13,6 +13,7 @@ import './login-panel.js';
 import './telemetry-grid.js';
 import './nodes-view.js';
 import './ui-card.js';
+import './infinite-feed-demo.js';
 
 declare global {
   interface Window {
