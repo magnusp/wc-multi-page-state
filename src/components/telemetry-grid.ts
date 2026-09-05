@@ -1,8 +1,8 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, property, state, query } from 'lit/decorators.js';
+import { customElement, property, query } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import { telemetryContext, authContext } from '../core/context/tokens.js';
-import type { TelemetryStore, TelemetryNode, TelemetryIncident } from '../core/store/telemetry-store.js';
+import type { TelemetryStore } from '../core/store/telemetry-store.js';
 import type { AuthStore } from '../core/store/auth-store.js';
 import './node-popover.js';
 import './incident-modal.js';
@@ -23,73 +23,31 @@ export class TelemetryGrid extends LitElement {
   @property({ attribute: false })
   public telemetryStore?: TelemetryStore;
 
-  @state() private nodes: TelemetryNode[] = [];
-  @state() private activeIncident: TelemetryIncident | null = null;
-  @state() private isAuthenticated: boolean = false;
-
   @query('incident-modal')
   private modalEl!: IncidentModal;
 
-  private onTick = (e: Event) => {
-    this.nodes = (e as CustomEvent).detail.nodes;
-  };
-
-  private onIncident = (e: Event) => {
-    this.activeIncident = (e as CustomEvent).detail;
-  };
-
-  private onIncidentResolved = () => {
-    this.activeIncident = null;
-  };
-
   private handleModalResolve = () => {
-    this.activeIncident = null;
     this.telemetryStore?.resolveIncident();
   };
 
-  private onAuthChanged = (e: Event) => {
-    const user = (e as CustomEvent).detail?.user;
-    this.isAuthenticated = !!user;
-  };
-
-  connectedCallback(): void {
+  override connectedCallback(): void {
     super.connectedCallback();
-    this.syncStores();
-  }
-
-  willUpdate(changedProps: Map<string, unknown>): void {
-    if (changedProps.has('telemetryStore') || changedProps.has('authStore')) {
-      this.syncStores();
+    if (!this.authStore && typeof window !== 'undefined' && window.__AETHER_SHELL__?.authStore) {
+      this.authStore = window.__AETHER_SHELL__.authStore;
+    }
+    if (!this.telemetryStore && typeof window !== 'undefined' && window.__AETHER_SHELL__?.telemetryStore) {
+      this.telemetryStore = window.__AETHER_SHELL__.telemetryStore;
     }
   }
 
-  private syncStores(): void {
-    if (this.authStore) {
-      this.isAuthenticated = this.authStore.isAuthenticated;
-      this.authStore.removeEventListener('auth-changed', this.onAuthChanged);
-      this.authStore.addEventListener('auth-changed', this.onAuthChanged);
+  override willUpdate(changedProps: Map<string, unknown>): void {
+    if (changedProps.has('authStore')) {
+      (changedProps.get('authStore') as AuthStore | undefined)?.removeHost(this);
+      this.authStore?.addHost(this);
     }
-    if (this.telemetryStore) {
-      this.nodes = this.telemetryStore.getNodes();
-      this.activeIncident = this.telemetryStore.getIncident();
-      this.telemetryStore.removeEventListener('telemetry-tick', this.onTick);
-      this.telemetryStore.removeEventListener('incident-raised', this.onIncident);
-      this.telemetryStore.removeEventListener('incident-resolved', this.onIncidentResolved);
-      this.telemetryStore.addEventListener('telemetry-tick', this.onTick);
-      this.telemetryStore.addEventListener('incident-raised', this.onIncident);
-      this.telemetryStore.addEventListener('incident-resolved', this.onIncidentResolved);
-    }
-  }
-
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-    if (this.authStore) {
-      this.authStore.removeEventListener('auth-changed', this.onAuthChanged);
-    }
-    if (this.telemetryStore) {
-      this.telemetryStore.removeEventListener('telemetry-tick', this.onTick);
-      this.telemetryStore.removeEventListener('incident-raised', this.onIncident);
-      this.telemetryStore.removeEventListener('incident-resolved', this.onIncidentResolved);
+    if (changedProps.has('telemetryStore')) {
+      (changedProps.get('telemetryStore') as TelemetryStore | undefined)?.removeHost(this);
+      this.telemetryStore?.addHost(this);
     }
   }
 
@@ -253,7 +211,8 @@ export class TelemetryGrid extends LitElement {
   }
 
   render() {
-    if (!this.isAuthenticated) {
+    const isAuthenticated = this.authStore?.isAuthenticated ?? false;
+    if (!isAuthenticated) {
       return html`
         <ui-card
           title="Access Restricted"
@@ -263,6 +222,9 @@ export class TelemetryGrid extends LitElement {
         ></ui-card>
       `;
     }
+
+    const activeIncident = this.telemetryStore?.getIncident() ?? null;
+    const nodes = this.telemetryStore?.getNodes() ?? [];
 
     return html`
       <div class="header-bar">
@@ -278,10 +240,10 @@ export class TelemetryGrid extends LitElement {
         </button>
       </div>
 
-      ${this.activeIncident ? html`
+      ${activeIncident ? html`
         <div class="incident-alert-banner" role="alert">
           <div>
-            <strong>Incident Detected:</strong> ${this.activeIncident.message}
+            <strong>Incident Detected:</strong> ${activeIncident.message}
           </div>
           <button class="btn-alert" @click=${this.handleOpenModal}>
             Open Incident Dialog
@@ -290,7 +252,7 @@ export class TelemetryGrid extends LitElement {
       ` : null}
 
       <div class="grid">
-        ${this.nodes.map(node => html`
+        ${nodes.map(node => html`
           <div class="card ${node.isCordoned ? 'status-cordoned' : `status-${node.status}`}">
             <div class="node-header">
               <div>
@@ -339,7 +301,7 @@ export class TelemetryGrid extends LitElement {
 
       <!-- Native <dialog> Modal -->
       <incident-modal
-        .incident=${this.activeIncident}
+        .incident=${activeIncident}
         @incident-resolved=${this.handleModalResolve}
       ></incident-modal>
     `;

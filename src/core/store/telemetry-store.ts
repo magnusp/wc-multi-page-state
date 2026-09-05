@@ -1,3 +1,5 @@
+import type { ReactiveControllerHost } from 'lit';
+
 export interface TelemetryNode {
   id: string;
   name: string;
@@ -21,16 +23,38 @@ export interface TelemetryIncident {
 /**
  * TelemetryStore: Framework-agnostic store using EventTarget.
  * Simulates real-time IoT/cluster monitoring metrics.
+ * Integrates with Lit ReactiveControllerHost for host component subscriptions.
  */
 export class TelemetryStore extends EventTarget {
   private nodes: TelemetryNode[] = [];
   private activeIncident: TelemetryIncident | null = null;
   private timer: number | null = null;
+  private hosts = new Set<ReactiveControllerHost>();
 
   constructor() {
     super();
     this.initDefaultNodes();
     this.startSimulation();
+  }
+
+  public addHost(host: ReactiveControllerHost): void {
+    this.hosts.add(host);
+    host.addController({
+      hostDisconnected: () => {
+        this.hosts.delete(host);
+      }
+    });
+    host.requestUpdate();
+  }
+
+  public removeHost(host: ReactiveControllerHost): void {
+    this.hosts.delete(host);
+  }
+
+  private notifyHosts(): void {
+    for (const host of this.hosts) {
+      host.requestUpdate();
+    }
   }
 
   private initDefaultNodes(): void {
@@ -63,12 +87,14 @@ export class TelemetryStore extends EventTarget {
       nodeId
     };
     this.dispatchEvent(new CustomEvent('incident-raised', { detail: this.activeIncident }));
+    this.notifyHosts();
   }
 
   public resolveIncident(): void {
     if (!this.activeIncident) return;
     this.activeIncident = null;
     this.dispatchEvent(new CustomEvent('incident-resolved'));
+    this.notifyHosts();
   }
 
   /**
@@ -168,6 +194,7 @@ export class TelemetryStore extends EventTarget {
     }
 
     this.dispatchEvent(new CustomEvent('telemetry-tick', { detail: { nodes: this.nodes } }));
+    this.notifyHosts();
   }
 
   private startSimulation(): void {
@@ -213,6 +240,7 @@ export class TelemetryStore extends EventTarget {
       });
 
       this.dispatchEvent(new CustomEvent('telemetry-tick', { detail: { nodes: this.nodes } }));
+      this.notifyHosts();
     }, 2500);
   }
 
@@ -221,5 +249,6 @@ export class TelemetryStore extends EventTarget {
       clearInterval(this.timer);
       this.timer = null;
     }
+    this.hosts.clear();
   }
 }

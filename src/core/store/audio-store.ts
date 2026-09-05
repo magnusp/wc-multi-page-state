@@ -1,3 +1,4 @@
+import type { ReactiveControllerHost } from 'lit';
 import { SoundscapeEngine } from '../audio/soundscape-engine.js';
 import { StorageLike, getDefaultStorage } from './storage-adapter.js';
 
@@ -12,7 +13,7 @@ export interface AudioPreferences {
  * Persists user playback, mute, and volume preferences to session storage so state is
  * retained across page transitions, hard refreshes, and tab duplication.
  * Accepts optional StorageLike dependency injection.
- * Emits events via EventTarget.
+ * Emits events via EventTarget and notifies Lit reactive hosts.
  */
 export class AudioStore extends EventTarget {
   private static readonly STORAGE_KEY = '__APP_AUDIO_PREFS__';
@@ -21,12 +22,33 @@ export class AudioStore extends EventTarget {
   private isEnabled: boolean = true;
   private isMuted: boolean = false;
   private volumeLevel: number = 0.3;
+  private hosts = new Set<ReactiveControllerHost>();
 
   constructor(storage: StorageLike = getDefaultStorage()) {
     super();
     this.storage = storage;
     this.engine = new SoundscapeEngine();
     this.hydrateFromStorage();
+  }
+
+  public addHost(host: ReactiveControllerHost): void {
+    this.hosts.add(host);
+    host.addController({
+      hostDisconnected: () => {
+        this.hosts.delete(host);
+      }
+    });
+    host.requestUpdate();
+  }
+
+  public removeHost(host: ReactiveControllerHost): void {
+    this.hosts.delete(host);
+  }
+
+  private notifyHosts(): void {
+    for (const host of this.hosts) {
+      host.requestUpdate();
+    }
   }
 
   private hydrateFromStorage(): void {
@@ -139,5 +161,6 @@ export class AudioStore extends EventTarget {
         alertState: this.engine.currentAlertState
       }
     }));
+    this.notifyHosts();
   }
 }

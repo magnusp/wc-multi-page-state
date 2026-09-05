@@ -1,3 +1,4 @@
+import type { ReactiveControllerHost } from 'lit';
 import { StorageLike, getDefaultStorage } from './storage-adapter.js';
 
 export interface UserSession {
@@ -11,12 +12,14 @@ export interface UserSession {
  * Manages authentication, validation (password === 'joshua'),
  * session storage synchronization, and multi-tab isolation.
  * Accepts optional StorageLike dependency injection.
+ * Integrates with Lit ReactiveControllerHost for host component subscriptions.
  */
 export class AuthStore extends EventTarget {
   private static readonly STORAGE_KEY = '__APP_AUTH_SESSION__';
   private storage: StorageLike;
   private session: UserSession | null = null;
   public readonly currentTabId: string;
+  private hosts = new Set<ReactiveControllerHost>();
 
   constructor(storage: StorageLike = getDefaultStorage()) {
     super();
@@ -24,6 +27,26 @@ export class AuthStore extends EventTarget {
     // Unique tab instance ID per window context
     this.currentTabId = `tab_${Math.random().toString(36).slice(2, 9)}_${Date.now()}`;
     this.hydrateFromStorage();
+  }
+
+  public addHost(host: ReactiveControllerHost): void {
+    this.hosts.add(host);
+    host.addController({
+      hostDisconnected: () => {
+        this.hosts.delete(host);
+      }
+    });
+    host.requestUpdate();
+  }
+
+  public removeHost(host: ReactiveControllerHost): void {
+    this.hosts.delete(host);
+  }
+
+  private notifyHosts(): void {
+    for (const host of this.hosts) {
+      host.requestUpdate();
+    }
   }
 
   /**
@@ -87,6 +110,7 @@ export class AuthStore extends EventTarget {
     }
 
     this.dispatchEvent(new CustomEvent('auth-changed', { detail: { isAuthenticated: true, user: trimmedUser } }));
+    this.notifyHosts();
     return { success: true };
   }
 
@@ -98,5 +122,6 @@ export class AuthStore extends EventTarget {
       // Ignore
     }
     this.dispatchEvent(new CustomEvent('auth-changed', { detail: { isAuthenticated: false, user: null } }));
+    this.notifyHosts();
   }
 }

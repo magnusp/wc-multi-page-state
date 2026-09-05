@@ -81,4 +81,37 @@ describe('TelemetryStore (Decoupled EventTarget Domain Store)', () => {
     store.toggleCordon('node-delta');
     expect(tickFired).toBe(true);
   });
+
+  it('supports ReactiveController host registration and notifies hosts on changes', () => {
+    let updateRequestedCount = 0;
+    let registeredController: any = null;
+
+    const mockHost: any = {
+      addController: (ctrl: any) => {
+        registeredController = ctrl;
+      },
+      requestUpdate: () => {
+        updateRequestedCount++;
+      }
+    };
+
+    store.addHost(mockHost);
+    expect(updateRequestedCount).toBe(1);
+
+    store.toggleCordon('node-alpha');
+    expect(updateRequestedCount).toBe(2);
+
+    store.triggerMockIncident('node-beta');
+    expect(updateRequestedCount).toBe(3);
+
+    store.resolveIncident();
+    expect(updateRequestedCount).toBe(4);
+
+    // Simulating host disconnect removes host
+    if (registeredController && typeof registeredController.hostDisconnected === 'function') {
+      registeredController.hostDisconnected();
+    }
+    store.toggleCordon('node-alpha');
+    expect(updateRequestedCount).toBe(4);
+  });
 });

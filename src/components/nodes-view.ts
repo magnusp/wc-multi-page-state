@@ -1,8 +1,8 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import { telemetryContext, authContext } from '../core/context/tokens.js';
-import type { TelemetryStore, TelemetryNode } from '../core/store/telemetry-store.js';
+import type { TelemetryStore } from '../core/store/telemetry-store.js';
 import type { AuthStore } from '../core/store/auth-store.js';
 import './ui-card.js';
 
@@ -21,49 +21,24 @@ export class NodesView extends LitElement {
   @property({ attribute: false })
   public telemetryStore?: TelemetryStore;
 
-  @state() private nodes: TelemetryNode[] = [];
-  @state() private isAuthenticated: boolean = false;
-
-  private onTick = (e: Event) => {
-    this.nodes = (e as CustomEvent).detail.nodes;
-  };
-
-  private onAuthChanged = (e: Event) => {
-    const user = (e as CustomEvent).detail?.user;
-    this.isAuthenticated = !!user;
-  };
-
-  connectedCallback(): void {
+  override connectedCallback(): void {
     super.connectedCallback();
-    this.syncStores();
-  }
-
-  willUpdate(changedProps: Map<string, unknown>): void {
-    if (changedProps.has('telemetryStore') || changedProps.has('authStore')) {
-      this.syncStores();
+    if (!this.authStore && typeof window !== 'undefined' && window.__AETHER_SHELL__?.authStore) {
+      this.authStore = window.__AETHER_SHELL__.authStore;
+    }
+    if (!this.telemetryStore && typeof window !== 'undefined' && window.__AETHER_SHELL__?.telemetryStore) {
+      this.telemetryStore = window.__AETHER_SHELL__.telemetryStore;
     }
   }
 
-  private syncStores(): void {
-    if (this.authStore) {
-      this.isAuthenticated = this.authStore.isAuthenticated;
-      this.authStore.removeEventListener('auth-changed', this.onAuthChanged);
-      this.authStore.addEventListener('auth-changed', this.onAuthChanged);
+  override willUpdate(changedProps: Map<string, unknown>): void {
+    if (changedProps.has('authStore')) {
+      (changedProps.get('authStore') as AuthStore | undefined)?.removeHost(this);
+      this.authStore?.addHost(this);
     }
-    if (this.telemetryStore) {
-      this.nodes = this.telemetryStore.getNodes();
-      this.telemetryStore.removeEventListener('telemetry-tick', this.onTick);
-      this.telemetryStore.addEventListener('telemetry-tick', this.onTick);
-    }
-  }
-
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-    if (this.authStore) {
-      this.authStore.removeEventListener('auth-changed', this.onAuthChanged);
-    }
-    if (this.telemetryStore) {
-      this.telemetryStore.removeEventListener('telemetry-tick', this.onTick);
+    if (changedProps.has('telemetryStore')) {
+      (changedProps.get('telemetryStore') as TelemetryStore | undefined)?.removeHost(this);
+      this.telemetryStore?.addHost(this);
     }
   }
 
@@ -187,7 +162,8 @@ export class NodesView extends LitElement {
   }
 
   render() {
-    if (!this.isAuthenticated) {
+    const isAuthenticated = this.authStore?.isAuthenticated ?? false;
+    if (!isAuthenticated) {
       return html`
         <ui-card
           title="Access Restricted"
@@ -197,6 +173,8 @@ export class NodesView extends LitElement {
         ></ui-card>
       `;
     }
+
+    const nodes = this.telemetryStore?.getNodes() ?? [];
 
     return html`
       <div class="header">
@@ -225,7 +203,7 @@ export class NodesView extends LitElement {
             </tr>
           </thead>
           <tbody>
-            ${this.nodes.map(node => html`
+            ${nodes.map(node => html`
               <tr class=${node.isCordoned ? 'row-cordoned' : ''}>
                 <td>
                   <strong>${node.name}</strong>

@@ -94,4 +94,36 @@ describe('AudioStore', () => {
     expect(store.alertState).toBe('healthy');
     expect(notifiedState).toBe('healthy');
   });
+
+  it('supports ReactiveController host registration and notifies hosts on changes', () => {
+    let updateRequestedCount = 0;
+    let registeredController: any = null;
+
+    const mockHost: any = {
+      addController: (ctrl: any) => {
+        registeredController = ctrl;
+      },
+      requestUpdate: () => {
+        updateRequestedCount++;
+      }
+    };
+
+    store.addHost(mockHost);
+    expect(updateRequestedCount).toBe(1);
+
+    store.toggleMute();
+    expect(updateRequestedCount).toBe(2);
+
+    store.setVolume(0.8);
+    expect(updateRequestedCount).toBe(3);
+
+    store.setAlertState('warning');
+    expect(updateRequestedCount).toBe(4);
+
+    if (registeredController && typeof registeredController.hostDisconnected === 'function') {
+      registeredController.hostDisconnected();
+    }
+    store.toggleMute();
+    expect(updateRequestedCount).toBe(4);
+  });
 });

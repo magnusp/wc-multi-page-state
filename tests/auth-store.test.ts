@@ -70,4 +70,54 @@ describe('AuthStore (Framework-Agnostic Domain Store)', () => {
     expect(secondStore.isAuthenticated).toBe(true);
     expect(secondStore.currentUser).toBe('isolated-operator');
   });
+
+  it('supports ReactiveController host registration and notifies hosts on changes', () => {
+    let updateRequestedCount = 0;
+    let registeredController: any = null;
+
+    const mockHost: any = {
+      addController: (ctrl: any) => {
+        registeredController = ctrl;
+      },
+      requestUpdate: () => {
+        updateRequestedCount++;
+      }
+    };
+
+    store.addHost(mockHost);
+    expect(updateRequestedCount).toBe(1); // addHost calls requestUpdate immediately
+    expect(registeredController).not.toBeNull();
+
+    // Login triggers host.requestUpdate()
+    store.login('tester', 'joshua');
+    expect(updateRequestedCount).toBe(2);
+
+    // Logout triggers host.requestUpdate()
+    store.logout();
+    expect(updateRequestedCount).toBe(3);
+
+    // Simulating host disconnect removes host
+    if (registeredController && typeof registeredController.hostDisconnected === 'function') {
+      registeredController.hostDisconnected();
+    }
+    store.login('tester2', 'joshua');
+    expect(updateRequestedCount).toBe(3); // no additional update requested
+  });
+
+  it('allows explicit host removal with removeHost', () => {
+    let updateRequestedCount = 0;
+    const mockHost: any = {
+      addController: () => {},
+      requestUpdate: () => {
+        updateRequestedCount++;
+      }
+    };
+
+    store.addHost(mockHost);
+    expect(updateRequestedCount).toBe(1);
+
+    store.removeHost(mockHost);
+    store.login('tester', 'joshua');
+    expect(updateRequestedCount).toBe(1);
+  });
 });

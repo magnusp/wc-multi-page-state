@@ -22,60 +22,27 @@ export class LoginPanel extends LitElement {
   @state() private password = '';
   @state() private errorMessage = '';
   @state() private isSubmitting = false;
-  @state() private currentUser: string | null = null;
-  @state() private activeTabId: string | null = null;
 
-  private internals: ElementInternals;
-
-  private onAuthChanged = (e: Event) => {
-    const detail = (e as CustomEvent).detail;
-    this.currentUser = detail.user;
-    this.activeTabId = this.authStore?.currentTabId ?? null;
-  };
+  private internals?: ElementInternals;
 
   constructor() {
     super();
-    this.internals = this.attachInternals();
+    if (typeof this.attachInternals === 'function') {
+      this.internals = this.attachInternals();
+    }
   }
 
-  connectedCallback(): void {
+  override connectedCallback(): void {
     super.connectedCallback();
-    this.syncAuth();
+    if (!this.authStore && typeof window !== 'undefined' && window.__AETHER_SHELL__?.authStore) {
+      this.authStore = window.__AETHER_SHELL__.authStore;
+    }
   }
 
-  willUpdate(changedProps: Map<string, unknown>): void {
+  override willUpdate(changedProps: Map<string, unknown>): void {
     if (changedProps.has('authStore')) {
-      this.syncAuth();
-    }
-  }
-
-  private syncAuth(): void {
-    const store = this.authStore || window.__AETHER_SHELL__?.authStore;
-    if (store) {
-      this.currentUser = store.currentUser;
-      this.activeTabId = store.currentTabId;
-      store.removeEventListener('auth-changed', this.onAuthChanged);
-      store.addEventListener('auth-changed', this.onAuthChanged);
-    } else if (typeof sessionStorage !== 'undefined') {
-      // Direct fallback to sessionStorage if DOM context is still upgrading
-      try {
-        const raw = sessionStorage.getItem('__APP_AUTH_SESSION__');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed && typeof parsed.username === 'string') {
-            this.currentUser = parsed.username;
-          }
-        }
-      } catch {
-        // Ignore
-      }
-    }
-  }
-
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-    if (this.authStore) {
-      this.authStore.removeEventListener('auth-changed', this.onAuthChanged);
+      (changedProps.get('authStore') as AuthStore | undefined)?.removeHost(this);
+      this.authStore?.addHost(this);
     }
   }
 
@@ -279,17 +246,17 @@ export class LoginPanel extends LitElement {
   }
 
   private updateFormValidity() {
-    this.internals.setFormValue(`${this.username}`);
+    this.internals?.setFormValue?.(`${this.username}`);
     if (!this.username) {
-      this.internals.setValidity({ valueMissing: true }, 'Username is required');
+      this.internals?.setValidity?.({ valueMissing: true }, 'Username is required');
     } else {
-      this.internals.setValidity({});
+      this.internals?.setValidity?.({});
     }
   }
 
   private handleSubmit(e: Event) {
     e.preventDefault();
-    const store = this.authStore || window.__AETHER_SHELL__?.authStore;
+    const store = this.authStore || (typeof window !== 'undefined' ? window.__AETHER_SHELL__?.authStore : undefined);
     if (!store) return;
 
     this.isSubmitting = true;
@@ -309,29 +276,32 @@ export class LoginPanel extends LitElement {
   }
 
   private handleTerminateSession() {
-    const store = this.authStore || window.__AETHER_SHELL__?.authStore;
+    const store = this.authStore || (typeof window !== 'undefined' ? window.__AETHER_SHELL__?.authStore : undefined);
     store?.logout();
   }
 
   render() {
-    if (this.currentUser) {
+    const currentUser = this.authStore?.currentUser;
+    const activeTabId = this.authStore?.currentTabId;
+
+    if (currentUser) {
       return html`
         <div class="card" role="region" aria-label="Active Session Established">
           <div class="session-badge">
             <span>●</span> Active Session Established
           </div>
 
-          <h2 class="title">Welcome, ${this.currentUser}</h2>
+          <h2 class="title">Welcome, ${currentUser}</h2>
           <p class="subtitle">An authenticated operator session is currently active.</p>
 
           <div class="session-info">
             <div class="session-row">
               <span class="label">Operator:</span>
-              <span class="value">${this.currentUser}</span>
+              <span class="value">${currentUser}</span>
             </div>
             <div class="session-row">
               <span class="label">Tab Instance:</span>
-              <span class="value">${this.activeTabId ? this.activeTabId.slice(0, 14) + '…' : 'current-tab'}</span>
+              <span class="value">${activeTabId ? activeTabId.slice(0, 14) + '…' : 'current-tab'}</span>
             </div>
             <div class="session-row">
               <span class="label">Storage Scope:</span>

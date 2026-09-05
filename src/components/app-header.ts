@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import { authContext, audioContext } from '../core/context/tokens.js';
 import type { AuthStore } from '../core/store/auth-store.js';
@@ -21,57 +21,26 @@ export class AppHeader extends LitElement {
   @property({ attribute: false })
   public audioStore?: AudioStore;
 
-  @state() private isAudioPlaying = false;
-  @state() private isAudioMuted = false;
-  @state() private audioVolume = 0.3;
-  @state() private currentUser: string | null = null;
-
-  private onAuthChanged = (e: Event) => {
-    this.currentUser = (e as CustomEvent).detail.user;
-  };
-
-  private onAudioChanged = (e: Event) => {
-    const d = (e as CustomEvent).detail;
-    this.isAudioPlaying = d.isPlaying;
-    this.isAudioMuted = d.muted;
-    this.audioVolume = d.volume;
-  };
-
-  connectedCallback(): void {
+  override connectedCallback(): void {
     super.connectedCallback();
-    this.syncStores();
-  }
-
-  willUpdate(changedProps: Map<string, unknown>): void {
-    if (changedProps.has('authStore') || changedProps.has('audioStore')) {
-      this.syncStores();
+    if (!this.authStore && typeof window !== 'undefined' && window.__AETHER_SHELL__?.authStore) {
+      this.authStore = window.__AETHER_SHELL__.authStore;
+      this.authStore.addHost(this);
+    }
+    if (!this.audioStore && typeof window !== 'undefined' && window.__AETHER_SHELL__?.audioStore) {
+      this.audioStore = window.__AETHER_SHELL__.audioStore;
+      this.audioStore.addHost(this);
     }
   }
 
-  private syncStores(): void {
-    const auth = this.authStore || window.__AETHER_SHELL__?.authStore;
-    if (auth) {
-      this.currentUser = auth.currentUser;
-      auth.removeEventListener('auth-changed', this.onAuthChanged);
-      auth.addEventListener('auth-changed', this.onAuthChanged);
+  override willUpdate(changedProps: Map<string, unknown>): void {
+    if (changedProps.has('authStore')) {
+      (changedProps.get('authStore') as AuthStore | undefined)?.removeHost(this);
+      this.authStore?.addHost(this);
     }
-    const audio = this.audioStore || window.__AETHER_SHELL__?.audioStore;
-    if (audio) {
-      this.isAudioPlaying = audio.isPlaying;
-      this.isAudioMuted = audio.muted;
-      this.audioVolume = audio.volume;
-      audio.removeEventListener('audio-changed', this.onAudioChanged);
-      audio.addEventListener('audio-changed', this.onAudioChanged);
-    }
-  }
-
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-    if (this.authStore) {
-      this.authStore.removeEventListener('auth-changed', this.onAuthChanged);
-    }
-    if (this.audioStore) {
-      this.audioStore.removeEventListener('audio-changed', this.onAudioChanged);
+    if (changedProps.has('audioStore')) {
+      (changedProps.get('audioStore') as AudioStore | undefined)?.removeHost(this);
+      this.audioStore?.addHost(this);
     }
   }
 
@@ -83,6 +52,19 @@ export class AppHeader extends LitElement {
       position: sticky;
       top: 0;
       z-index: 50;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+      border: 0;
     }
 
     .header-inner {
@@ -218,20 +200,20 @@ export class AppHeader extends LitElement {
     }
   `;
 
-  private async toggleAudio() {
+  private async toggleAudio(): Promise<void> {
     await this.audioStore?.togglePlay();
   }
 
-  private toggleMute() {
+  private toggleMute(): void {
     this.audioStore?.toggleMute();
   }
 
-  private handleVolume(e: Event) {
+  private handleVolume(e: Event): void {
     const val = parseFloat((e.target as HTMLInputElement).value);
     this.audioStore?.setVolume(val);
   }
 
-  private handleLogout() {
+  private handleLogout(): void {
     this.authStore?.logout();
     // Navigate back to index
     this.dispatchEvent(new CustomEvent('request-navigation', {
@@ -252,7 +234,7 @@ export class AppHeader extends LitElement {
         <nav aria-label="Main Navigation">
           <a href="index.html">Gateway</a>
           <a href="showcase.html">Standards Showcase</a>
-          ${this.currentUser ? html`
+          ${this.authStore?.currentUser ? html`
             <a href="dashboard.html">Telemetry</a>
             <a href="dashboard-nodes.html">Nodes</a>
             <button
@@ -271,25 +253,25 @@ export class AppHeader extends LitElement {
           <!-- Web Audio Soundscape Controls -->
           <div class="audio-controls" role="toolbar" aria-label="Soundscape Controls">
             <button
-              class="btn-ctrl ${this.isAudioPlaying ? 'active' : ''}"
+              class="btn-ctrl ${this.audioStore?.isPlaying ? 'active' : ''}"
               @click=${this.toggleAudio}
-              aria-label="${this.isAudioPlaying ? 'Stop ambient audio' : 'Start ambient audio'}"
-              title="${this.isAudioPlaying ? 'Stop ambient audio' : 'Start ambient audio'}"
+              aria-label="${this.audioStore?.isPlaying ? 'Stop ambient audio' : 'Start ambient audio'}"
+              title="${this.audioStore?.isPlaying ? 'Stop ambient audio' : 'Start ambient audio'}"
             >
-              ${this.isAudioPlaying ? '■ Audio On' : '▶ Audio Off'}
+              ${this.audioStore?.isPlaying ? '■ Audio On' : '▶ Audio Off'}
             </button>
 
             <button
-              class="btn-ctrl ${this.isAudioMuted ? 'muted' : ''}"
+              class="btn-ctrl ${this.audioStore?.muted ? 'muted' : ''}"
               @click=${this.toggleMute}
-              ?disabled=${!this.isAudioPlaying}
-              aria-label="${this.isAudioMuted ? 'Unmute audio' : 'Mute audio'}"
-              title="${this.isAudioMuted ? 'Unmute audio' : 'Mute audio'}"
+              ?disabled=${!this.audioStore?.isPlaying}
+              aria-label="${this.audioStore?.muted ? 'Unmute audio' : 'Mute audio'}"
+              title="${this.audioStore?.muted ? 'Unmute audio' : 'Mute audio'}"
             >
-              ${this.isAudioMuted ? '🔇 Muted' : '🔊 Sound'}
+              ${this.audioStore?.muted ? '🔇 Muted' : '🔊 Sound'}
             </button>
 
-            <label for="soundscape-vol" class="visually-hidden" style="display:none;">Volume</label>
+            <label for="soundscape-vol" class="visually-hidden">Volume</label>
             <input
               id="soundscape-vol"
               type="range"
@@ -297,16 +279,16 @@ export class AppHeader extends LitElement {
               max="1"
               step="0.05"
               class="volume-slider"
-              .value=${this.audioVolume}
+              .value=${this.audioStore?.volume ?? 0.3}
               @input=${this.handleVolume}
-              ?disabled=${!this.isAudioPlaying}
+              ?disabled=${!this.audioStore?.isPlaying}
               aria-label="Soundscape Volume"
             />
           </div>
 
-          ${this.currentUser ? html`
+          ${this.authStore?.currentUser ? html`
             <div class="user-pill">
-              <span>👤 ${this.currentUser}</span>
+              <span>👤 ${this.authStore?.currentUser}</span>
               <button class="btn-logout" @click=${this.handleLogout}>Sign Out</button>
             </div>
           ` : null}
