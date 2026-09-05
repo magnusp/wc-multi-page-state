@@ -136,14 +136,29 @@
           </div>
         </section>
 
-        <!-- 8. State Decoupling & Multi-Tab Isolation -->
-        <section class="showcase-card" style="grid-column: 1 / -1;">
+        <!-- 8. Native Virtualization: content-visibility -->
+        <section class="showcase-card">
           <div class="showcase-card-header">
-            <h2 class="showcase-card-title">8. State Decoupling & Multi-Tab Isolation</h2>
-            <span class="showcase-badge">EventTarget + sessionStorage</span>
+            <h2 class="showcase-card-title">8. Native Virtualization: content-visibility & contain-intrinsic-size</h2>
+            <span class="showcase-badge">Engine-Level Virtualization</span>
           </div>
           <p class="showcase-card-desc">
-            Domain stores (<code>AuthStore</code>, <code>TelemetryStore</code>, <code>AudioStore</code>) extend standard browser <code>EventTarget</code>, completely decoupled from UI components and distributed via W3C DOM Context. Tab duplication is handled natively via <code>sessionStorage</code> cloning while retaining unique per-window tab IDs.
+            This showcase page leverages <code>content-visibility: auto</code> paired with <code>contain-intrinsic-size: auto 180px</code> on each single-column card. Rather than using userland JavaScript DOM recycling (such as virtualizer libraries that break in-page find <code>Ctrl+F</code> and fragment accessibility trees), the browser engine natively skips layout, style calculation, and painting for off-screen cards while keeping all nodes accessible.
+          </p>
+          <div class="showcase-card-footer">
+            <span>Standard: <strong>CSS Containment Level 2</strong></span>
+            <a href="https://www.w3.org/TR/css-contain-2/#content-visibility" target="_blank" rel="noopener">Spec &rarr;</a>
+          </div>
+        </section>
+
+        <!-- 9. State Decoupling & Multi-Tab Isolation -->
+        <section class="showcase-card">
+          <div class="showcase-card-header">
+            <h2 class="showcase-card-title">9. State Decoupling, Storage DI & Multi-Tab Isolation</h2>
+            <span class="showcase-badge">EventTarget + StorageLike</span>
+          </div>
+          <p class="showcase-card-desc">
+            Domain stores (<code>AuthStore</code>, <code>TelemetryStore</code>, <code>AudioStore</code>) extend standard browser <code>EventTarget</code>, completely decoupled from UI components and distributed via W3C DOM Context. Storage is threaded via constructor dependency injection with an in-memory fallback for test isolation, while tab duplication is handled natively via <code>sessionStorage</code> cloning.
           </p>
           <div class="showcase-card-footer">
             <span>Standard: <strong>WHATWG DOM & Web Storage</strong></span>

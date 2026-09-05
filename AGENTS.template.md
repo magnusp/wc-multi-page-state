@@ -41,6 +41,7 @@ This document guides AI coding agents in designing and implementing modern, dura
 | **Popovers / Menus** | Native Popover API (`popover="auto"`, `popovertarget`) | Floating UI, Popper.js, Tippy |
 | **Page Transitions** | Native View Transitions API (`document.startViewTransition`) with reduced-motion support | Framer Motion, React Transition Group |
 | **Continuous Media** | Persistent shell singleton + Web Audio API + user gesture fallback | SPA router audio workarounds |
+| **List Virtualization** | Native `content-visibility: auto` + `contain-intrinsic-size` | Imperative JS virtual scrollers for &lt;5k items |
 | **Responsive UI** | CSS Container Queries (`@container`) | Window resize event listeners, media-query bloat |
 | **CSS Architecture** | CSS Cascade Layers (`@layer`) & Custom Properties | CSS-in-JS runtimes, heavy utility preprocessors |
 

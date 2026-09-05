@@ -75,7 +75,17 @@ A reference manual for building modern, resilient web applications leveraging na
 
 ---
 
-## 8. State Decoupling & Multi-Tab Isolation
+## 8. Native Virtualization: `content-visibility` & `contain-intrinsic-size`
+- **W3C Standard:** [CSS Containment Module Level 2: content-visibility](https://www.w3.org/TR/css-contain-2/#content-visibility)
+- **MDN Guide:** [content-visibility on MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/content-visibility)
+- **Role in Showcase:**
+  - Implemented in `src/styles/layers.css` on `.showcase-card`.
+  - Configures `content-visibility: auto` paired with `contain-intrinsic-size: auto 180px` on the single-column showcase cards.
+  - Rather than using userland JavaScript DOM recycling (virtual scrollers that break in-page `Ctrl+F` search and screen reader trees), the native browser engine skips style calculation, layout, and painting for off-screen cards until scrolled into view while keeping the complete DOM accessible.
+
+---
+
+## 9. State Decoupling & Multi-Tab Isolation
 - **WHATWG Standard:** [EventTarget](https://dom.spec.whatwg.org/#interface-eventtarget) & [Web Storage API](https://html.spec.whatwg.org/multipage/webstorage.html)
 - **Role in Showcase:**
   - Stores (`AuthStore`, `TelemetryStore`, `AudioStore`) are pure TypeScript `EventTarget` instances.
